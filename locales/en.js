@@ -1,0 +1,51 @@
+(function () {
+    window.__KSU_A11Y_LOCALES__ = window.__KSU_A11Y_LOCALES__ || {};
+
+    window.__KSU_A11Y_LOCALES__.en = {
+        title: 'Accessibility',
+        open: 'Open accessibility options',
+        close: 'Close accessibility panel',
+        resetAll: 'Reset all',
+        profiles: 'Profiles',
+        text: 'Text',
+        view: 'View',
+        color: 'Color',
+        epilepsy: 'Epilepsy safe',
+        visuallyImpaired: 'Visually impaired',
+        cognitive: 'Cognitive disability',
+        motorImpaired: 'Motor impaired',
+        colorblind: 'Colorblind',
+        dyslexia: 'Dyslexia friendly',
+        adhd: 'ADHD friendly',
+        blindness: 'Blindness',
+        fontSizeStep: 'Size',
+        fontWeightStep: 'Weight',
+        lineHeightStep: 'Lines',
+        letterSpacingStep: 'Spacing',
+        wordSpacingStep: 'Words',
+        textAlign: 'Align',
+        dyslexiaFont: 'Dyslexia Font',
+        readSelectedText: 'Read Selected',
+        zoomStep: 'Zoom',
+        highlightLinks: 'Links',
+        highlightHeadings: 'Headings',
+        bigCursor: 'Cursor',
+        reduceMotion: 'Motion',
+        focusHighlight: 'Focus',
+        hideImages: 'Images',
+        readingGuide: 'Reading Guide',
+        darkMode: 'Dark UI',
+        highContrast: 'Contrast',
+        lowSaturation: 'Saturation',
+        monochrome: 'Mono',
+        on: 'On',
+        off: 'Off',
+        stateSaved: 'Accessibility settings saved',
+        panelOpened: 'Accessibility panel opened',
+        panelClosed: 'Accessibility panel closed'
+    };
+
+    if (window.KsuAccessibilityWidget && typeof window.KsuAccessibilityWidget.registerLocale === 'function') {
+        window.KsuAccessibilityWidget.registerLocale('en', window.__KSU_A11Y_LOCALES__.en);
+    }
+})();

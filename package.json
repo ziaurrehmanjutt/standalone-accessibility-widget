@@ -1,0 +1,18 @@
+{
+  "name": "ksu-standalone-accessibility-widget",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Framework-agnostic standalone accessibility widget",
+  "license": "UNLICENSED",
+  "scripts": {
+    "minify:js": "terser accessibility-widget.js -c -m --comments false -o accessibility-widget.min.js",
+    "minify:icons": "terser accessibility-widget-icons.js -c -m --comments false -o accessibility-widget-icons.min.js",
+    "minify:css": "csso accessibility-widget.css --output accessibility-widget.min.css",
+    "minify:locales": "terser locales/en.js -c -m --comments false -o locales/en.min.js && terser locales/ar.js -c -m --comments false -o locales/ar.min.js",
+    "build": "npm run minify:js && npm run minify:icons && npm run minify:css && npm run minify:locales"
+  },
+  "devDependencies": {
+    "csso-cli": "^4.0.2",
+    "terser": "^5.31.6"
+  }
+}
