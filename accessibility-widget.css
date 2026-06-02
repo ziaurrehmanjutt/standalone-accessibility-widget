@@ -92,6 +92,13 @@ html.ksu-a11y-big-cursor * {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath fill='black' stroke='white' stroke-width='1.5' d='M4 4l7.07 17 2.51-7.39L21 11.07z'/%3E%3C/svg%3E") 4 4, auto !important;
 }
 
+#ksu-a11y-widget-root{
+    max-height: 80vh;
+    overflow: auto;
+    max-width: fit-content;
+
+}
+
 #ksu-a11y-widget-root.ksu-a11y-widget,
 #ksu-a11y-widget-root.ksu-a11y-widget * {
     box-sizing: border-box;
