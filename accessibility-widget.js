@@ -103,6 +103,8 @@
         highContrast: 'Contrast',
         lowSaturation: 'Saturation',
         monochrome: 'Mono',
+        languageName: 'English',
+        languageIcon: '????',
         language: 'Language',
         auto: 'Auto',
         on: 'On',
@@ -283,7 +285,17 @@
         if (langKey === 'auto') {
             return t('auto');
         }
+        if (locales[langKey] && locales[langKey].languageName) {
+            return locales[langKey].languageName;
+        }
         return LANGUAGE_LABELS[langKey] || langKey.toUpperCase();
+    }
+
+    function getLanguageIcon(langKey) {
+        if (langKey === 'auto') {
+            return '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2v20M6 6l12 12M6 18l12-12" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+        }
+        return (locales[langKey] && locales[langKey].languageIcon) || '';
     }
 
     function getAvailableLanguages() {
@@ -655,18 +667,45 @@
         button.dataset.lang = langKey;
         button.setAttribute('title', getLanguageLabel(langKey));
 
+        var icon = document.createElement('span');
+        icon.className = 'ksu-a11y-language-icon';
+        icon.innerHTML = getLanguageIcon(langKey);
+
         var label = document.createElement('span');
         label.className = 'ksu-a11y-profile-label';
         label.textContent = getLanguageLabel(langKey);
 
+        button.appendChild(icon);
         button.appendChild(label);
         button.addEventListener('click', function () {
-            setLanguage(langKey);
+            setLanguage(langKey); closeLanguageMenu();
         });
 
-        dom.languageButtons[langKey] = { button: button, label: label };
-        return button;
-    }
+        dom.languageButtons[langKey] = { button: button, icon: icon, label: label };
+            closeLanguageMenu();
+            return button;
+        }
+
+        function toggleLanguageMenu() {
+            if (!dom.languageMenu || !dom.headerLanguageBtn) {
+                return;
+            }
+            var isOpen = !dom.languageMenu.hidden;
+            dom.languageMenu.hidden = isOpen;
+            dom.headerLanguageBtn.setAttribute('aria-expanded', (!isOpen).toString());
+        }
+
+        function closeLanguageMenu() {
+            if (!dom.languageMenu) {
+                return;
+            }
+            if (!dom.languageMenu.hidden) {
+                dom.languageMenu.hidden = true;
+            }
+            if (dom.headerLanguageBtn) {
+                dom.headerLanguageBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
 
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
@@ -742,8 +781,55 @@
 
         headerActions.appendChild(headerReset);
         headerActions.appendChild(closeBtn);
+
+        var languageBtn = document.createElement('button');
+        languageBtn.type = 'button';
+        languageBtn.className = 'ksu-a11y-header-language-btn';
+        languageBtn.setAttribute('title', t('language'));
+        languageBtn.setAttribute('aria-expanded', 'false');
+
+        var languageBtnIcon = document.createElement('span');
+        languageBtnIcon.className = 'ksu-a11y-language-icon';
+        languageBtnIcon.innerHTML = getLanguageIcon(state.lang);
+
+        var languageBtnLabel = document.createElement('span');
+        languageBtnLabel.className = 'ksu-a11y-header-language-label';
+        languageBtnLabel.textContent = getLanguageLabel(state.lang);
+
+        var languageBtnArrow = document.createElement('span');
+        languageBtnArrow.className = 'ksu-a11y-header-language-chevron';
+        languageBtnArrow.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+        languageBtn.appendChild(languageBtnIcon);
+        languageBtn.appendChild(languageBtnLabel);
+        languageBtn.appendChild(languageBtnArrow);
+        languageBtn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            toggleLanguageMenu();
+        });
+
+        headerActions.appendChild(languageBtn);
         header.appendChild(title);
         header.appendChild(headerActions);
+
+        var languageMenu = document.createElement('div');
+        languageMenu.className = 'ksu-a11y-language-dropdown';
+        languageMenu.hidden = true;
+
+        var languageMenuGrid = document.createElement('div');
+        languageMenuGrid.className = 'ksu-a11y-profile-grid ksu-a11y-language-menu-grid';
+        var languageKeys = ['auto'].concat(getAvailableLanguages());
+        for (var l = 0; l < languageKeys.length; l += 1) {
+            languageMenuGrid.appendChild(createLanguageButton(languageKeys[l]));
+        }
+        languageMenu.appendChild(languageMenuGrid);
+        header.appendChild(languageMenu);
+
+        dom.languageMenu = languageMenu;
+        dom.languageMenuGrid = languageMenuGrid;
+        dom.headerLanguageBtn = languageBtn;
+        dom.headerLanguageLabel = languageBtnLabel;
+        dom.headerLanguageIcon = languageBtnIcon;
 
         var body = document.createElement('div');
         body.className = 'ksu-a11y-body';
@@ -757,18 +843,6 @@
         }
         profilesWrap.appendChild(profilesGrid);
         body.appendChild(profilesWrap);
-
-        var languageWrap = document.createElement('div');
-        addSectionTitle(languageWrap, 'language');
-        var languageGrid = document.createElement('div');
-        languageGrid.className = 'ksu-a11y-profile-grid';
-        var languageKeys = ['auto'].concat(getAvailableLanguages());
-        for (var l = 0; l < languageKeys.length; l += 1) {
-            languageGrid.appendChild(createLanguageButton(languageKeys[l]));
-        }
-        languageWrap.appendChild(languageGrid);
-        body.appendChild(languageWrap);
-        dom.languageGrid = languageGrid;
 
         var groups = ['text', 'view', 'color'];
         for (var g = 0; g < groups.length; g += 1) {
@@ -920,6 +994,9 @@
             if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey)) {
                 dom.languageButtons[langKey].label.textContent = getLanguageLabel(langKey);
                 dom.languageButtons[langKey].button.setAttribute('title', getLanguageLabel(langKey));
+                if (dom.languageButtons[langKey].icon) {
+                    dom.languageButtons[langKey].icon.innerHTML = getLanguageIcon(langKey);
+                }
             }
         }
     }
@@ -942,6 +1019,11 @@
         for (var modeKey in dom.profileButtons) {
             if (Object.prototype.hasOwnProperty.call(dom.profileButtons, modeKey)) {
                 setIcon(dom.profileButtons[modeKey].icon, modeKey);
+            }
+        }
+        for (var langKey in dom.languageButtons) {
+            if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey) && dom.languageButtons[langKey].icon) {
+                dom.languageButtons[langKey].icon.innerHTML = getLanguageIcon(langKey);
             }
         }
     }
@@ -1001,8 +1083,8 @@
         }
         locales[lang] = mergeObjects(defaultLocale, dictionary);
         if (dom.initialized) {
-            if (dom.languageGrid && !dom.languageButtons[lang]) {
-                dom.languageGrid.appendChild(createLanguageButton(lang));
+            if (dom.languageMenuGrid && !dom.languageButtons[lang]) {
+                dom.languageMenuGrid.appendChild(createLanguageButton(lang));
             }
             apply(false);
         }
@@ -1217,6 +1299,8 @@
         highContrast: 'Contrast',
         lowSaturation: 'Saturation',
         monochrome: 'Mono',
+        languageName: 'English',
+        languageIcon: '????',
         language: 'Language',
         auto: 'Auto',
         on: 'On',
@@ -1397,7 +1481,17 @@
         if (langKey === 'auto') {
             return t('auto');
         }
+        if (locales[langKey] && locales[langKey].languageName) {
+            return locales[langKey].languageName;
+        }
         return LANGUAGE_LABELS[langKey] || langKey.toUpperCase();
+    }
+
+    function getLanguageIcon(langKey) {
+        if (langKey === 'auto') {
+            return '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2v20M6 6l12 12M6 18l12-12" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+        }
+        return (locales[langKey] && locales[langKey].languageIcon) || '';
     }
 
     function getAvailableLanguages() {
@@ -1769,18 +1863,45 @@
         button.dataset.lang = langKey;
         button.setAttribute('title', getLanguageLabel(langKey));
 
+        var icon = document.createElement('span');
+        icon.className = 'ksu-a11y-language-icon';
+        icon.innerHTML = getLanguageIcon(langKey);
+
         var label = document.createElement('span');
         label.className = 'ksu-a11y-profile-label';
         label.textContent = getLanguageLabel(langKey);
 
+        button.appendChild(icon);
         button.appendChild(label);
         button.addEventListener('click', function () {
-            setLanguage(langKey);
+            setLanguage(langKey); closeLanguageMenu();
         });
 
-        dom.languageButtons[langKey] = { button: button, label: label };
-        return button;
-    }
+        dom.languageButtons[langKey] = { button: button, icon: icon, label: label };
+            closeLanguageMenu();
+            return button;
+        }
+
+        function toggleLanguageMenu() {
+            if (!dom.languageMenu || !dom.headerLanguageBtn) {
+                return;
+            }
+            var isOpen = !dom.languageMenu.hidden;
+            dom.languageMenu.hidden = isOpen;
+            dom.headerLanguageBtn.setAttribute('aria-expanded', (!isOpen).toString());
+        }
+
+        function closeLanguageMenu() {
+            if (!dom.languageMenu) {
+                return;
+            }
+            if (!dom.languageMenu.hidden) {
+                dom.languageMenu.hidden = true;
+            }
+            if (dom.headerLanguageBtn) {
+                dom.headerLanguageBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
 
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
@@ -1853,8 +1974,55 @@
 
         headerActions.appendChild(headerReset);
         headerActions.appendChild(closeBtn);
+
+        var languageBtn = document.createElement('button');
+        languageBtn.type = 'button';
+        languageBtn.className = 'ksu-a11y-header-language-btn';
+        languageBtn.setAttribute('title', t('language'));
+        languageBtn.setAttribute('aria-expanded', 'false');
+
+        var languageBtnIcon = document.createElement('span');
+        languageBtnIcon.className = 'ksu-a11y-language-icon';
+        languageBtnIcon.innerHTML = getLanguageIcon(state.lang);
+
+        var languageBtnLabel = document.createElement('span');
+        languageBtnLabel.className = 'ksu-a11y-header-language-label';
+        languageBtnLabel.textContent = getLanguageLabel(state.lang);
+
+        var languageBtnArrow = document.createElement('span');
+        languageBtnArrow.className = 'ksu-a11y-header-language-chevron';
+        languageBtnArrow.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+        languageBtn.appendChild(languageBtnIcon);
+        languageBtn.appendChild(languageBtnLabel);
+        languageBtn.appendChild(languageBtnArrow);
+        languageBtn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            toggleLanguageMenu();
+        });
+
+        headerActions.appendChild(languageBtn);
         header.appendChild(title);
         header.appendChild(headerActions);
+
+        var languageMenu = document.createElement('div');
+        languageMenu.className = 'ksu-a11y-language-dropdown';
+        languageMenu.hidden = true;
+
+        var languageMenuGrid = document.createElement('div');
+        languageMenuGrid.className = 'ksu-a11y-profile-grid ksu-a11y-language-menu-grid';
+        var languageKeys = ['auto'].concat(getAvailableLanguages());
+        for (var l = 0; l < languageKeys.length; l += 1) {
+            languageMenuGrid.appendChild(createLanguageButton(languageKeys[l]));
+        }
+        languageMenu.appendChild(languageMenuGrid);
+        header.appendChild(languageMenu);
+
+        dom.languageMenu = languageMenu;
+        dom.languageMenuGrid = languageMenuGrid;
+        dom.headerLanguageBtn = languageBtn;
+        dom.headerLanguageLabel = languageBtnLabel;
+        dom.headerLanguageIcon = languageBtnIcon;
 
         var body = document.createElement('div');
         body.className = 'ksu-a11y-body';
@@ -1868,18 +2036,6 @@
         }
         profilesWrap.appendChild(profilesGrid);
         body.appendChild(profilesWrap);
-
-        var languageWrap = document.createElement('div');
-        addSectionTitle(languageWrap, 'language');
-        var languageGrid = document.createElement('div');
-        languageGrid.className = 'ksu-a11y-profile-grid';
-        var languageKeys = ['auto'].concat(getAvailableLanguages());
-        for (var l = 0; l < languageKeys.length; l += 1) {
-            languageGrid.appendChild(createLanguageButton(languageKeys[l]));
-        }
-        languageWrap.appendChild(languageGrid);
-        body.appendChild(languageWrap);
-        dom.languageGrid = languageGrid;
 
         var groups = ['text', 'view', 'color'];
         for (var g = 0; g < groups.length; g += 1) {
@@ -2029,6 +2185,9 @@
             if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey)) {
                 dom.languageButtons[langKey].label.textContent = getLanguageLabel(langKey);
                 dom.languageButtons[langKey].button.setAttribute('title', getLanguageLabel(langKey));
+                if (dom.languageButtons[langKey].icon) {
+                    dom.languageButtons[langKey].icon.innerHTML = getLanguageIcon(langKey);
+                }
             }
         }
     }
@@ -2055,6 +2214,11 @@
         for (var modeKey in dom.profileButtons) {
             if (Object.prototype.hasOwnProperty.call(dom.profileButtons, modeKey)) {
                 setIcon(dom.profileButtons[modeKey].icon, modeKey);
+            }
+        }
+        for (var langKey in dom.languageButtons) {
+            if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey) && dom.languageButtons[langKey].icon) {
+                dom.languageButtons[langKey].icon.innerHTML = getLanguageIcon(langKey);
             }
         }
     }
@@ -2114,8 +2278,8 @@
         }
         locales[lang] = mergeObjects(defaultLocale, dictionary);
         if (dom.initialized) {
-            if (dom.languageGrid && !dom.languageButtons[lang]) {
-                dom.languageGrid.appendChild(createLanguageButton(lang));
+            if (dom.languageMenuGrid && !dom.languageButtons[lang]) {
+                dom.languageMenuGrid.appendChild(createLanguageButton(lang));
             }
             apply(false);
         }

@@ -5,6 +5,8 @@
         title: 'رسائی',
         open: 'رسائی کے اختیارات کھولیں',
         close: 'رسائی پینل بند کریں',
+        languageName: 'Urdu',
+        languageIcon: '🇵🇰',
         resetAll: 'سب کچھ ری سیٹ کریں',
         profiles: 'پروفائلز',
         text: 'متن',
