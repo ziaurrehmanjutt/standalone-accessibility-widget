@@ -125,18 +125,20 @@ html.ksu-a11y-big-cursor * {
 
 .ksu-a11y-launcher {
     float: inline-end;
-    display: inline-flex;
+    height: 3.5rem; /* h-14 */
+    width: 3.5rem;  /* w-14 */
     align-items: center;
-    gap: 0.55rem;
-    border: 0;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #0f62fe 0%, #0a4dcc 100%);
-    color: #ffffff;
-    padding: 0.7rem 1rem;
-    font-size: 0.83rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(15, 98, 254, 0.35);
+    justify-content: center;
+    border-radius: 9999px; /* rounded-full */
+
+    background-color: #60a5fa;
+    color: white;
+
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px color-mix(in srgb, var(--primary) 50%, transparent),
+                0 10px 30px rgba(0, 0, 0, 0.1);
+
+    transition: transform 150ms ease;
 }
 
 .ksu-a11y-launcher:hover {
@@ -148,7 +150,6 @@ html.ksu-a11y-big-cursor * {
     outline-offset: 2px;
 }
 
-.ksu-a11y-launcher-icon,
 .ksu-a11y-icon,
 .ksu-a11y-btn-icon,
 .ksu-a11y-profile-icon {
@@ -160,7 +161,6 @@ html.ksu-a11y-big-cursor * {
     flex: 0 0 auto;
 }
 
-.ksu-a11y-launcher-icon svg,
 .ksu-a11y-icon svg,
 .ksu-a11y-btn-icon svg,
 .ksu-a11y-profile-icon svg {

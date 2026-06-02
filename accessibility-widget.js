@@ -1761,7 +1761,7 @@
         launcherLabel.textContent = t('title');
 
         toggleButton.appendChild(launcherIcon);
-        toggleButton.appendChild(launcherLabel);
+        // toggleButton.appendChild(launcherLabel);
         toggleButton.addEventListener('click', function () {
             if (dom.panel.hidden) {
                 openPanel();
