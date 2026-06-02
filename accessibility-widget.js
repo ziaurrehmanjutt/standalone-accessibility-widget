@@ -6,6 +6,11 @@
     var ROOT_ID = 'ksu-a11y-widget-root';
     var READING_GUIDE_ID = 'ksu-a11y-reading-guide';
     var DEFAULT_LANG = 'en';
+    var LANGUAGE_LABELS = {
+        en: 'English',
+        ar: 'Arabic',
+        ur: 'Urdu'
+    };
 
     var FONT_SCALES = [1, 1.1, 1.2, 1.3, 1.4];
     var FONT_WEIGHTS = [400, 500, 600, 700];
@@ -98,6 +103,8 @@
         highContrast: 'Contrast',
         lowSaturation: 'Saturation',
         monochrome: 'Mono',
+        language: 'Language',
+        auto: 'Auto',
         on: 'On',
         off: 'Off',
         stateSaved: 'Accessibility settings saved',
@@ -139,7 +146,7 @@
         lowSaturation: false,
         monochrome: false,
         activeMode: null,
-        lang: DEFAULT_LANG
+        lang: 'auto'
     };
 
     var dom = {
@@ -150,7 +157,9 @@
         mounted: false,
         initialized: false,
         controls: {},
-        profileButtons: {}
+        profileButtons: {},
+        languageButtons: {},
+        languageGrid: null
     };
 
     var uiDefinition = {
@@ -187,7 +196,7 @@
         zIndex: 2147483000,
         autoInjectCss: true,
         cssHref: '',
-        lang: DEFAULT_LANG,
+        lang: 'auto',
         remember: true,
         storageKey: STORAGE_KEY,
         icons: null
@@ -220,6 +229,9 @@
     }
 
     function resolveLocale(lang) {
+        if (lang === 'auto') {
+            lang = resolvePageLang();
+        }
         if (locales[lang]) {
             return locales[lang];
         }
@@ -238,6 +250,48 @@
         }
         var trimmed = markup.trim();
         return trimmed.indexOf('<svg') === 0 ? trimmed : '';
+    }
+
+    function resolvePageLang() {
+        var lang = (document.documentElement.lang || document.documentElement.getAttribute('xml:lang') || '').trim().toLowerCase();
+        if (!lang) {
+            lang = (navigator.language || navigator.userLanguage || DEFAULT_LANG).toLowerCase();
+        }
+        return lang.split('-')[0] || DEFAULT_LANG;
+    }
+
+    function resolvePageDir() {
+        var dir = (document.documentElement.dir || document.body.dir || 'ltr').trim().toLowerCase();
+        return dir === 'rtl' ? 'rtl' : 'ltr';
+    }
+
+    function resolvePosition(position) {
+        var pos = String(position || '').toLowerCase();
+        if (pos === 'left' || pos === 'right') {
+            return pos;
+        }
+        if (pos === 'start') {
+            return resolvePageDir() === 'rtl' ? 'right' : 'left';
+        }
+        if (pos === 'end') {
+            return resolvePageDir() === 'rtl' ? 'left' : 'right';
+        }
+        return 'right';
+    }
+
+    function getLanguageLabel(langKey) {
+        if (langKey === 'auto') {
+            return t('auto');
+        }
+        return LANGUAGE_LABELS[langKey] || langKey.toUpperCase();
+    }
+
+    function getAvailableLanguages() {
+        return Object.keys(locales).sort();
+    }
+
+    function getEffectiveLang() {
+        return state.lang === 'auto' ? resolvePageLang() : state.lang;
     }
 
     function getIconMarkup(iconKey) {
@@ -318,6 +372,9 @@
             if (typeof parsed.lang === 'string') {
                 state.lang = parsed.lang;
             }
+            if (typeof parsed.langMode === 'string' && parsed.langMode === 'auto') {
+                state.lang = 'auto';
+            }
             if (parsed.activeMode === null || MODE_PRESETS[parsed.activeMode]) {
                 state.activeMode = parsed.activeMode;
             }
@@ -353,7 +410,8 @@
                 lowSaturation: state.lowSaturation,
                 monochrome: state.monochrome,
                 activeMode: state.activeMode,
-                lang: state.lang
+                lang: state.lang,
+                langMode: state.lang === 'auto' ? 'auto' : 'manual'
             }));
         } catch (error) {
             // Ignore unavailable storage.
@@ -590,6 +648,26 @@
         return button;
     }
 
+    function createLanguageButton(langKey) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'ksu-a11y-profile-btn';
+        button.dataset.lang = langKey;
+        button.setAttribute('title', getLanguageLabel(langKey));
+
+        var label = document.createElement('span');
+        label.className = 'ksu-a11y-profile-label';
+        label.textContent = getLanguageLabel(langKey);
+
+        button.appendChild(label);
+        button.addEventListener('click', function () {
+            setLanguage(langKey);
+        });
+
+        dom.languageButtons[langKey] = { button: button, label: label };
+        return button;
+    }
+
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
         title.className = 'ksu-a11y-section-title';
@@ -680,6 +758,18 @@
         profilesWrap.appendChild(profilesGrid);
         body.appendChild(profilesWrap);
 
+        var languageWrap = document.createElement('div');
+        addSectionTitle(languageWrap, 'language');
+        var languageGrid = document.createElement('div');
+        languageGrid.className = 'ksu-a11y-profile-grid';
+        var languageKeys = ['auto'].concat(getAvailableLanguages());
+        for (var l = 0; l < languageKeys.length; l += 1) {
+            languageGrid.appendChild(createLanguageButton(languageKeys[l]));
+        }
+        languageWrap.appendChild(languageGrid);
+        body.appendChild(languageWrap);
+        dom.languageGrid = languageGrid;
+
         var groups = ['text', 'view', 'color'];
         for (var g = 0; g < groups.length; g += 1) {
             var groupWrap = document.createElement('div');
@@ -734,7 +824,7 @@
         var host = document.createElement('section');
         host.id = ROOT_ID;
         host.className = 'ksu-a11y-widget';
-        host.dataset.position = options.position === 'left' ? 'left' : 'right';
+        host.dataset.position = resolvePosition(options.position);
         host.style.zIndex = String(options.zIndex);
 
         var liveRegion = document.createElement('div');
@@ -826,6 +916,12 @@
                 dom.profileButtons[modeKey].button.setAttribute('title', t(modeKey));
             }
         }
+        for (var langKey in dom.languageButtons) {
+            if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey)) {
+                dom.languageButtons[langKey].label.textContent = getLanguageLabel(langKey);
+                dom.languageButtons[langKey].button.setAttribute('title', getLanguageLabel(langKey));
+            }
+        }
     }
 
     function refreshIcons() {
@@ -879,6 +975,13 @@
                 dom.profileButtons[modeKey].button.classList.toggle('is-active', state.activeMode === modeKey);
             }
         }
+        for (var langKey in dom.languageButtons) {
+            if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey)) {
+                var isActive = langKey === 'auto' ? state.lang === 'auto' : state.lang === langKey;
+                dom.languageButtons[langKey].button.classList.toggle('is-active', isActive);
+                dom.languageButtons[langKey].button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            }
+        }
     }
 
     function apply(shouldPersist) {
@@ -897,7 +1000,10 @@
             return;
         }
         locales[lang] = mergeObjects(defaultLocale, dictionary);
-        if (state.lang === lang && dom.initialized) {
+        if (dom.initialized) {
+            if (dom.languageGrid && !dom.languageButtons[lang]) {
+                dom.languageGrid.appendChild(createLanguageButton(lang));
+            }
             apply(false);
         }
     }
@@ -1000,8 +1106,8 @@
     var disableAuto = currentScript && currentScript.getAttribute('data-auto-init') === 'false';
     if (!disableAuto) {
         init({
-            position: currentScript && currentScript.getAttribute('data-position') === 'left' ? 'left' : 'right',
-            lang: (currentScript && currentScript.getAttribute('data-lang')) || DEFAULT_LANG,
+            position: (currentScript && currentScript.getAttribute('data-position')) || 'right',
+            lang: (currentScript && currentScript.getAttribute('data-lang')) || 'auto',
             cssHref: (currentScript && currentScript.getAttribute('data-css-href')) || '',
             autoInjectCss: !(currentScript && currentScript.getAttribute('data-auto-css') === 'false')
         });
@@ -1015,6 +1121,10 @@
     var ROOT_ID = 'ksu-a11y-widget-root';
     var READING_GUIDE_ID = 'ksu-a11y-reading-guide';
     var DEFAULT_LANG = 'en';
+    var LANGUAGE_LABELS = {
+        en: 'English',
+        ar: 'Arabic'
+    };
 
     var FONT_SCALES = [1, 1.1, 1.2, 1.3, 1.4];
     var FONT_WEIGHTS = [400, 500, 600, 700];
@@ -1107,6 +1217,8 @@
         highContrast: 'Contrast',
         lowSaturation: 'Saturation',
         monochrome: 'Mono',
+        language: 'Language',
+        auto: 'Auto',
         on: 'On',
         off: 'Off',
         stateSaved: 'Accessibility settings saved',
@@ -1148,7 +1260,7 @@
         lowSaturation: false,
         monochrome: false,
         activeMode: null,
-        lang: DEFAULT_LANG
+        lang: 'auto'
     };
 
     var dom = {
@@ -1159,7 +1271,9 @@
         mounted: false,
         initialized: false,
         controls: {},
-        profileButtons: {}
+        profileButtons: {},
+        languageButtons: {},
+        languageGrid: null
     };
 
     var uiDefinition = {
@@ -1196,7 +1310,7 @@
         zIndex: 2147483000,
         autoInjectCss: true,
         cssHref: '',
-        lang: DEFAULT_LANG,
+        lang: 'auto',
         remember: true,
         storageKey: STORAGE_KEY,
         icons: null
@@ -1229,6 +1343,9 @@
     }
 
     function resolveLocale(lang) {
+        if (lang === 'auto') {
+            lang = resolvePageLang();
+        }
         if (locales[lang]) {
             return locales[lang];
         }
@@ -1247,6 +1364,48 @@
         }
         var trimmed = markup.trim();
         return trimmed.indexOf('<svg') === 0 ? trimmed : '';
+    }
+
+    function resolvePageLang() {
+        var lang = (document.documentElement.lang || document.documentElement.getAttribute('xml:lang') || '').trim().toLowerCase();
+        if (!lang) {
+            lang = (navigator.language || navigator.userLanguage || DEFAULT_LANG).toLowerCase();
+        }
+        return lang.split('-')[0] || DEFAULT_LANG;
+    }
+
+    function resolvePageDir() {
+        var dir = (document.documentElement.dir || document.body.dir || 'ltr').trim().toLowerCase();
+        return dir === 'rtl' ? 'rtl' : 'ltr';
+    }
+
+    function resolvePosition(position) {
+        var pos = String(position || '').toLowerCase();
+        if (pos === 'left' || pos === 'right') {
+            return pos;
+        }
+        if (pos === 'start') {
+            return resolvePageDir() === 'rtl' ? 'right' : 'left';
+        }
+        if (pos === 'end') {
+            return resolvePageDir() === 'rtl' ? 'left' : 'right';
+        }
+        return 'right';
+    }
+
+    function getLanguageLabel(langKey) {
+        if (langKey === 'auto') {
+            return t('auto');
+        }
+        return LANGUAGE_LABELS[langKey] || langKey.toUpperCase();
+    }
+
+    function getAvailableLanguages() {
+        return Object.keys(locales).sort();
+    }
+
+    function getEffectiveLang() {
+        return state.lang === 'auto' ? resolvePageLang() : state.lang;
     }
 
     function getIconMarkup(iconKey) {
@@ -1327,6 +1486,9 @@
             if (typeof parsed.lang === 'string') {
                 state.lang = parsed.lang;
             }
+            if (typeof parsed.langMode === 'string' && parsed.langMode === 'auto') {
+                state.lang = 'auto';
+            }
             if (parsed.activeMode === null || MODE_PRESETS[parsed.activeMode]) {
                 state.activeMode = parsed.activeMode;
             }
@@ -1362,7 +1524,8 @@
                 lowSaturation: state.lowSaturation,
                 monochrome: state.monochrome,
                 activeMode: state.activeMode,
-                lang: state.lang
+                lang: state.lang,
+                langMode: state.lang === 'auto' ? 'auto' : 'manual'
             }));
         } catch (error) {
             // Ignore storage error.
@@ -1599,6 +1762,26 @@
         return button;
     }
 
+    function createLanguageButton(langKey) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'ksu-a11y-profile-btn';
+        button.dataset.lang = langKey;
+        button.setAttribute('title', getLanguageLabel(langKey));
+
+        var label = document.createElement('span');
+        label.className = 'ksu-a11y-profile-label';
+        label.textContent = getLanguageLabel(langKey);
+
+        button.appendChild(label);
+        button.addEventListener('click', function () {
+            setLanguage(langKey);
+        });
+
+        dom.languageButtons[langKey] = { button: button, label: label };
+        return button;
+    }
+
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
         title.className = 'ksu-a11y-section-title';
@@ -1686,6 +1869,18 @@
         profilesWrap.appendChild(profilesGrid);
         body.appendChild(profilesWrap);
 
+        var languageWrap = document.createElement('div');
+        addSectionTitle(languageWrap, 'language');
+        var languageGrid = document.createElement('div');
+        languageGrid.className = 'ksu-a11y-profile-grid';
+        var languageKeys = ['auto'].concat(getAvailableLanguages());
+        for (var l = 0; l < languageKeys.length; l += 1) {
+            languageGrid.appendChild(createLanguageButton(languageKeys[l]));
+        }
+        languageWrap.appendChild(languageGrid);
+        body.appendChild(languageWrap);
+        dom.languageGrid = languageGrid;
+
         var groups = ['text', 'view', 'color'];
         for (var g = 0; g < groups.length; g += 1) {
             var groupWrap = document.createElement('div');
@@ -1737,7 +1932,7 @@
         var host = document.createElement('section');
         host.id = ROOT_ID;
         host.className = 'ksu-a11y-widget';
-        host.dataset.position = options.position === 'left' ? 'left' : 'right';
+        host.dataset.position = resolvePosition(options.position);
         host.style.zIndex = String(options.zIndex);
 
         var liveRegion = document.createElement('div');
@@ -1830,6 +2025,12 @@
                 dom.profileButtons[modeKey].button.setAttribute('title', t(modeKey));
             }
         }
+        for (var langKey in dom.languageButtons) {
+            if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey)) {
+                dom.languageButtons[langKey].label.textContent = getLanguageLabel(langKey);
+                dom.languageButtons[langKey].button.setAttribute('title', getLanguageLabel(langKey));
+            }
+        }
     }
 
     function refreshIcons() {
@@ -1886,6 +2087,13 @@
                 dom.profileButtons[modeKey].button.classList.toggle('is-active', state.activeMode === modeKey);
             }
         }
+        for (var langKey in dom.languageButtons) {
+            if (Object.prototype.hasOwnProperty.call(dom.languageButtons, langKey)) {
+                var isActive = langKey === 'auto' ? state.lang === 'auto' : state.lang === langKey;
+                dom.languageButtons[langKey].button.classList.toggle('is-active', isActive);
+                dom.languageButtons[langKey].button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            }
+        }
     }
 
     function apply(shouldPersist) {
@@ -1905,7 +2113,10 @@
             return;
         }
         locales[lang] = mergeObjects(defaultLocale, dictionary);
-        if (state.lang === lang && dom.initialized) {
+        if (dom.initialized) {
+            if (dom.languageGrid && !dom.languageButtons[lang]) {
+                dom.languageGrid.appendChild(createLanguageButton(lang));
+            }
             apply(false);
         }
     }
@@ -2008,8 +2219,8 @@
     var disableAuto = currentScript && currentScript.getAttribute('data-auto-init') === 'false';
     if (!disableAuto) {
         init({
-            position: currentScript && currentScript.getAttribute('data-position') === 'left' ? 'left' : 'right',
-            lang: (currentScript && currentScript.getAttribute('data-lang')) || DEFAULT_LANG,
+            position: (currentScript && currentScript.getAttribute('data-position')) || 'right',
+            lang: (currentScript && currentScript.getAttribute('data-lang')) || 'auto',
             cssHref: (currentScript && currentScript.getAttribute('data-css-href')) || '',
             autoInjectCss: !(currentScript && currentScript.getAttribute('data-auto-css') === 'false')
         });

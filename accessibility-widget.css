@@ -8,6 +8,7 @@
 
 html {
     font-size: calc(100% * var(--ksu-a11y-font-scale));
+    font-weight: var(--ksu-a11y-font-weight);
     line-height: var(--ksu-a11y-line-height);
     letter-spacing: var(--ksu-a11y-letter-spacing);
     word-spacing: var(--ksu-a11y-word-spacing);
@@ -141,8 +142,12 @@ html.ksu-a11y-big-cursor * {
     transition: transform 150ms ease;
 }
 
+[data-position="left"] .ksu-a11y-launcher{
+   float: inline-start;
+}
+
 .ksu-a11y-launcher:hover {
-    transform: translateY(-1px);
+    transform: scale(1.05);
 }
 
 .ksu-a11y-launcher:focus-visible {
@@ -288,6 +293,7 @@ html.ksu-a11y-big-cursor * {
     text-align: start;
     cursor: pointer;
     transition: 0.14s ease;
+    flex-direction: row-reverse;
 }
 
 .ksu-a11y-profile-btn:hover {
