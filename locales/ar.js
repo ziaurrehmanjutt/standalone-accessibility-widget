@@ -6,6 +6,7 @@
         open: 'فتح خيارات إمكانية الوصول',
         close: 'إغلاق لوحة إمكانية الوصول',
         languageName: 'العربية',
+        languageDir: 'rtl',
         languageIcon: '🇸🇦',
         resetAll: 'إعادة تعيين الكل',
         profiles: 'الملفات الجاهزة',
@@ -42,6 +43,10 @@
         monochrome: 'أحادي',
         on: 'تشغيل',
         off: 'إيقاف',
+        play: 'تشغيل',
+        pause: 'إيقاف مؤقت',
+        resume: 'استئناف',
+        stop: 'إيقاف',
         stateSaved: 'تم حفظ إعدادات إمكانية الوصول',
         panelOpened: 'تم فتح لوحة إمكانية الوصول',
         panelClosed: 'تم إغلاق لوحة إمكانية الوصول'

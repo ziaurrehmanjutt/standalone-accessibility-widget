@@ -6,6 +6,7 @@
         open: 'رسائی کے اختیارات کھولیں',
         close: 'رسائی پینل بند کریں',
         languageName: 'Urdu',
+        languageDir: 'rtl',
         languageIcon: '🇵🇰',
         resetAll: 'سب کچھ ری سیٹ کریں',
         profiles: 'پروفائلز',
@@ -42,6 +43,10 @@
         monochrome: 'یک رنگی',
         on: 'آن',
         off: 'آف',
+        play: 'چلائیں',
+        pause: 'روکیں',
+        resume: 'جاری رکھیں',
+        stop: 'بند کریں',
         stateSaved: 'رسائی کی ترتیبات محفوظ کر لی گئیں',
         panelOpened: 'رسائی پینل کھول دیا گیا',
         panelClosed: 'رسائی پینل بند کر دیا گیا'

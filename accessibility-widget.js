@@ -44,7 +44,7 @@
         dyslexia: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h16v3M12 4v16M9 20h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
         adhd: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="12" cy="12" r="2"></circle></svg>',
         blindness: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7c2 0 3.8.6 5.3 1.5M22 12s-3.5 7-10 7c-2 0-3.8-.6-5.3-1.5M2 2l20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
-        fontSizeStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h2l1-3h4l1 3h2L10 5H8L4 19Zm11-8V9h7v2h-2.5v8h-2V11H15Z"></path></svg>',
+        fontSizeStep: '<svg data-v-6c57e751="" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-horizontal-icon h-5 w-5"><path d="m18 8 4 4-4 4"></path><path d="M2 12h20"></path><path d="m6 8-4 4 4 4"></path></svg>',
         fontWeightStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h8a4 4 0 0 1 0 8H6V4Zm0 8h9a4 4 0 0 1 0 8H6v-8Z" fill="none" stroke="currentColor" stroke-width="2"></path></svg>',
         lineHeightStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
         letterSpacingStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zM16 6h2v12h-2zM9 18l3-12 3 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>',
@@ -104,11 +104,16 @@
         lowSaturation: 'Saturation',
         monochrome: 'Mono',
         languageName: 'English',
+        languageDir: 'ltr',
         languageIcon: '????',
         language: 'Language',
         auto: 'Auto',
         on: 'On',
         off: 'Off',
+        play: 'Play',
+        pause: 'Pause',
+        resume: 'Resume',
+        stop: 'Stop',
         stateSaved: 'Accessibility settings saved',
         panelOpened: 'Accessibility panel opened',
         panelClosed: 'Accessibility panel closed'
@@ -161,7 +166,11 @@
         controls: {},
         profileButtons: {},
         languageButtons: {},
-        languageGrid: null
+        languageMenu: null,
+        languageMenuGrid: null,
+        headerLanguageBtn: null,
+        headerLanguageLabel: null,
+        headerLanguageIcon: null
     };
 
     var uiDefinition = {
@@ -205,6 +214,13 @@
     };
 
     var speechBound = false;
+    var speechToolbarBound = false;
+    var speechToolbar = null;
+    var speechSelectionText = '';
+    var speechToolbarPlayBtn = null;
+    var speechToolbarPauseBtn = null;
+    var speechToolbarStopBtn = null;
+    var speechToolbarMode = 'idle';
     var readingGuideBound = false;
     var dyslexiaFontInjected = false;
 
@@ -267,6 +283,17 @@
         return dir === 'rtl' ? 'rtl' : 'ltr';
     }
 
+    function getLanguageDir(langKey) {
+        if (langKey === 'auto') {
+            return resolvePageDir();
+        }
+        var locale = locales[langKey];
+        if (locale && (locale.languageDir === 'rtl' || locale.languageDir === 'ltr')) {
+            return locale.languageDir;
+        }
+        return resolvePageDir();
+    }
+
     function resolvePosition(position) {
         var pos = String(position || '').toLowerCase();
         if (pos === 'left' || pos === 'right') {
@@ -304,6 +331,10 @@
 
     function getEffectiveLang() {
         return state.lang === 'auto' ? resolvePageLang() : state.lang;
+    }
+
+    function getEffectiveDir() {
+        return getLanguageDir(state.lang);
     }
 
     function getIconMarkup(iconKey) {
@@ -452,23 +483,197 @@
         dyslexiaFontInjected = true;
     }
 
+    function hideSpeechToolbar() {
+        if (!speechToolbar) {
+            return;
+        }
+        speechToolbar.hidden = true;
+        speechSelectionText = '';
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        speechToolbarMode = 'idle';
+    }
+
+    function setSpeechToolbarMode(mode) {
+        speechToolbarMode = mode;
+        if (!speechToolbarPlayBtn || !speechToolbarPauseBtn || !speechToolbarStopBtn) {
+            return;
+        }
+        var isPlaying = mode === 'playing' || mode === 'paused';
+        speechToolbarPlayBtn.hidden = isPlaying;
+        speechToolbarPauseBtn.hidden = !isPlaying;
+        speechToolbarStopBtn.hidden = !isPlaying;
+    }
+
+    function refreshSpeechToolbarA11yLabels() {
+        if (!speechToolbarPlayBtn || !speechToolbarPauseBtn || !speechToolbarStopBtn) {
+            return;
+        }
+        var pauseLabel = speechToolbarMode === 'paused' ? t('resume') : t('pause');
+        speechToolbarPlayBtn.setAttribute('aria-label', t('play'));
+        speechToolbarPlayBtn.setAttribute('title', t('play'));
+        speechToolbarPauseBtn.setAttribute('aria-label', pauseLabel);
+        speechToolbarPauseBtn.setAttribute('title', pauseLabel);
+        speechToolbarStopBtn.setAttribute('aria-label', t('stop'));
+        speechToolbarStopBtn.setAttribute('title', t('stop'));
+    }
+
+    function updateSpeechToolbarState() {
+        if (!speechToolbar || !window.speechSynthesis) {
+            return;
+        }
+        if (!window.speechSynthesis.speaking) {
+            setSpeechToolbarMode('idle');
+            refreshSpeechToolbarA11yLabels();
+            return;
+        }
+        setSpeechToolbarMode(window.speechSynthesis.paused ? 'paused' : 'playing');
+        refreshSpeechToolbarA11yLabels();
+    }
+
+    function ensureSpeechToolbarElement() {
+        if (speechToolbar) {
+            return speechToolbar;
+        }
+        var toolbar = document.createElement('div');
+        toolbar.className = 'ksu-a11y-speech-toolbar';
+        toolbar.hidden = true;
+
+        var playBtn = document.createElement('button');
+        playBtn.type = 'button';
+        playBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        playBtn.dataset.action = 'play';
+        setIcon(playBtn, 'speechPlay');
+
+        var pauseBtn = document.createElement('button');
+        pauseBtn.type = 'button';
+        pauseBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        pauseBtn.dataset.action = 'pause';
+        setIcon(pauseBtn, 'speechPause');
+
+        var stopBtn = document.createElement('button');
+        stopBtn.type = 'button';
+        stopBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        stopBtn.dataset.action = 'stop';
+        setIcon(stopBtn, 'speechStop');
+
+        playBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!speechSelectionText || !window.speechSynthesis) {
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                var utterance = new window.SpeechSynthesisUtterance(speechSelectionText);
+                var effectiveLang = getEffectiveLang();
+                utterance.lang = effectiveLang === 'ar' ? 'ar-SA' : effectiveLang === 'ur' ? 'ur-PK' : 'en-US';
+                utterance.rate = 1;
+                utterance.onstart = function () {
+                    setSpeechToolbarMode('playing');
+                    updateSpeechToolbarState();
+                };
+                utterance.onend = function () {
+                    setSpeechToolbarMode('idle');
+                    updateSpeechToolbarState();
+                };
+                utterance.onerror = function () {
+                    setSpeechToolbarMode('idle');
+                    updateSpeechToolbarState();
+                };
+                setSpeechToolbarMode('playing');
+                window.speechSynthesis.speak(utterance);
+                updateSpeechToolbarState();
+            } catch (error) {
+                // Ignore speech synthesis errors.
+            }
+        });
+
+        pauseBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!window.speechSynthesis || !window.speechSynthesis.speaking) {
+                return;
+            }
+            try {
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                    setSpeechToolbarMode('playing');
+                } else {
+                    window.speechSynthesis.pause();
+                    setSpeechToolbarMode('paused');
+                }
+                updateSpeechToolbarState();
+            } catch (error) {
+                // Ignore speech synthesis errors.
+            }
+        });
+
+        stopBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!window.speechSynthesis) {
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                setSpeechToolbarMode('idle');
+                updateSpeechToolbarState();
+            } catch (error) {
+                // Ignore speech synthesis errors.
+            }
+        });
+
+        toolbar.appendChild(playBtn);
+        toolbar.appendChild(pauseBtn);
+        toolbar.appendChild(stopBtn);
+        document.body.appendChild(toolbar);
+        speechToolbar = toolbar;
+        speechToolbarPlayBtn = playBtn;
+        speechToolbarPauseBtn = pauseBtn;
+        speechToolbarStopBtn = stopBtn;
+        setSpeechToolbarMode('idle');
+        refreshSpeechToolbarA11yLabels();
+        return toolbar;
+    }
+
+    function positionSpeechToolbar(selection) {
+        if (!selection || !selection.rangeCount || !speechToolbar) {
+            return;
+        }
+        var rect = selection.getRangeAt(0).getBoundingClientRect();
+        if (!rect || (!rect.width && !rect.height)) {
+            return;
+        }
+        var top = rect.top - 44;
+        if (top < 8) {
+            top = rect.bottom + 8;
+        }
+        speechToolbar.style.top = String(top) + 'px';
+        speechToolbar.style.left = String(rect.left + rect.width / 2) + 'px';
+    }
+
     function handleReadSelectedText() {
         if (!state.readSelectedText || !window.getSelection || !window.speechSynthesis) {
+            hideSpeechToolbar();
             return;
         }
-        var text = String(window.getSelection().toString() || '').trim();
+        var selection = window.getSelection();
+        var text = String(selection.toString() || '').trim();
         if (!text) {
+            hideSpeechToolbar();
             return;
         }
-        try {
+        if (speechSelectionText && speechSelectionText !== text && window.speechSynthesis) {
             window.speechSynthesis.cancel();
-            var utterance = new window.SpeechSynthesisUtterance(text);
-            utterance.lang = state.lang === 'ar' ? 'ar-SA' : 'en-US';
-            utterance.rate = 1;
-            window.speechSynthesis.speak(utterance);
-        } catch (error) {
-            // Ignore speech synthesis errors.
         }
+        speechSelectionText = text;
+        ensureSpeechToolbarElement();
+        positionSpeechToolbar(selection);
+        setSpeechToolbarMode('idle');
+        speechToolbar.hidden = false;
+        updateSpeechToolbarState();
     }
 
     function bindSpeechEventsIfNeeded() {
@@ -476,7 +681,34 @@
             return;
         }
         document.addEventListener('mouseup', handleReadSelectedText);
+        document.addEventListener('keyup', handleReadSelectedText);
         speechBound = true;
+
+        if (speechToolbarBound) {
+            return;
+        }
+        document.addEventListener('mousedown', function (event) {
+            if (!speechToolbar || speechToolbar.hidden) {
+                return;
+            }
+            if (speechToolbar.contains(event.target)) {
+                return;
+            }
+            var activeSelection = window.getSelection ? String(window.getSelection().toString() || '').trim() : '';
+            if (!activeSelection) {
+                hideSpeechToolbar();
+            }
+        });
+        document.addEventListener('selectionchange', function () {
+            if (!state.readSelectedText) {
+                return;
+            }
+            var activeSelection = window.getSelection ? String(window.getSelection().toString() || '').trim() : '';
+            if (!activeSelection) {
+                hideSpeechToolbar();
+            }
+        });
+        speechToolbarBound = true;
     }
 
     function ensureReadingGuideElement() {
@@ -507,6 +739,7 @@
 
     function updateRootClasses() {
         var root = document.documentElement;
+        var effectiveDir = getEffectiveDir();
 
         root.classList.toggle('ksu-a11y-highlight-links', state.highlightLinks);
         root.classList.toggle('ksu-a11y-highlight-headings', state.highlightHeadings);
@@ -536,11 +769,27 @@
 
         if (dom.host) {
             dom.host.classList.toggle('ksu-a11y-theme-dark', state.darkMode);
+            dom.host.dataset.dir = effectiveDir;
+            dom.host.setAttribute('dir', effectiveDir);
+            dom.host.dataset.position = resolvePosition(options.position);
+        }
+        if (dom.panel) {
+            dom.panel.setAttribute('dir', effectiveDir);
+        }
+        if (dom.languageMenu) {
+            dom.languageMenu.setAttribute('dir', effectiveDir);
         }
 
         applyDyslexiaFont();
         bindSpeechEventsIfNeeded();
         bindReadingGuideIfNeeded();
+
+        if (!state.readSelectedText) {
+            hideSpeechToolbar();
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        }
 
         var guide = ensureReadingGuideElement();
         guide.style.display = state.readingGuide ? 'block' : 'none';
@@ -663,7 +912,7 @@
     function createLanguageButton(langKey) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-profile-btn';
+        button.className = 'ksu-a11y-profile-btn ksu-a11y-language-option';
         button.dataset.lang = langKey;
         button.setAttribute('title', getLanguageLabel(langKey));
 
@@ -678,34 +927,34 @@
         button.appendChild(icon);
         button.appendChild(label);
         button.addEventListener('click', function () {
-            setLanguage(langKey); closeLanguageMenu();
+            setLanguage(langKey);
+            closeLanguageMenu();
         });
 
         dom.languageButtons[langKey] = { button: button, icon: icon, label: label };
-            closeLanguageMenu();
-            return button;
-        }
+        return button;
+    }
 
-        function toggleLanguageMenu() {
-            if (!dom.languageMenu || !dom.headerLanguageBtn) {
-                return;
-            }
-            var isOpen = !dom.languageMenu.hidden;
-            dom.languageMenu.hidden = isOpen;
-            dom.headerLanguageBtn.setAttribute('aria-expanded', (!isOpen).toString());
+    function toggleLanguageMenu() {
+        if (!dom.languageMenu || !dom.headerLanguageBtn) {
+            return;
         }
+        var isOpen = !dom.languageMenu.hidden;
+        dom.languageMenu.hidden = isOpen;
+        dom.headerLanguageBtn.setAttribute('aria-expanded', (!isOpen).toString());
+    }
 
-        function closeLanguageMenu() {
-            if (!dom.languageMenu) {
-                return;
-            }
-            if (!dom.languageMenu.hidden) {
-                dom.languageMenu.hidden = true;
-            }
-            if (dom.headerLanguageBtn) {
-                dom.headerLanguageBtn.setAttribute('aria-expanded', 'false');
-            }
+    function closeLanguageMenu() {
+        if (!dom.languageMenu) {
+            return;
         }
+        if (!dom.languageMenu.hidden) {
+            dom.languageMenu.hidden = true;
+        }
+        if (dom.headerLanguageBtn) {
+            dom.headerLanguageBtn.setAttribute('aria-expanded', 'false');
+        }
+    }
 
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
@@ -721,6 +970,7 @@
             return;
         }
         dom.panel.hidden = true;
+        closeLanguageMenu();
         dom.toggleButton.style.display = '';
         dom.toggleButton.setAttribute('aria-expanded', 'false');
         dom.toggleButton.focus();
@@ -808,9 +1058,9 @@
             toggleLanguageMenu();
         });
 
-        headerActions.appendChild(languageBtn);
-        header.appendChild(title);
         header.appendChild(headerActions);
+        header.appendChild(languageBtn);
+        header.appendChild(title);
 
         var languageMenu = document.createElement('div');
         languageMenu.className = 'ksu-a11y-language-dropdown';
@@ -873,10 +1123,13 @@
             resetState(true);
         });
 
-        body.appendChild(resetBtn);
-
         panel.appendChild(header);
         panel.appendChild(body);
+
+        var footer = document.createElement('div');
+        footer.className = 'ksu-a11y-panel-footer';
+        footer.appendChild(resetBtn);
+        panel.appendChild(footer);
 
         dom.controls.headerTitle = title;
         dom.controls.headerReset = headerReset;
@@ -999,6 +1252,27 @@
                 }
             }
         }
+        if (dom.headerLanguageBtn) {
+            dom.headerLanguageBtn.setAttribute('title', getLanguageLabel(state.lang));
+        }
+        if (dom.headerLanguageLabel) {
+            dom.headerLanguageLabel.textContent = getLanguageLabel(state.lang);
+        }
+        if (dom.headerLanguageIcon) {
+            dom.headerLanguageIcon.innerHTML = getLanguageIcon(state.lang);
+        }
+        if (speechToolbar) {
+            if (speechToolbarPlayBtn) {
+                setIcon(speechToolbarPlayBtn, 'speechPlay');
+            }
+            if (speechToolbarPauseBtn) {
+                setIcon(speechToolbarPauseBtn, 'speechPause');
+            }
+            if (speechToolbarStopBtn) {
+                setIcon(speechToolbarStopBtn, 'speechStop');
+            }
+            refreshSpeechToolbarA11yLabels();
+        }
     }
 
     function refreshIcons() {
@@ -1095,6 +1369,7 @@
             return;
         }
         state.lang = lang;
+        closeLanguageMenu();
         if (dom.initialized) {
             apply(true);
         }
@@ -1155,6 +1430,15 @@
         if (guide && guide.parentNode) {
             guide.parentNode.removeChild(guide);
         }
+        if (speechToolbar && speechToolbar.parentNode) {
+            speechToolbar.parentNode.removeChild(speechToolbar);
+        }
+        speechToolbar = null;
+        speechSelectionText = '';
+        speechToolbarPlayBtn = null;
+        speechToolbarPauseBtn = null;
+        speechToolbarStopBtn = null;
+        speechToolbarMode = 'idle';
 
         dom.host.parentNode.removeChild(dom.host);
         dom.host = null;
@@ -1240,7 +1524,7 @@
         dyslexia: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h16v3M12 4v16M9 20h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
         adhd: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="12" cy="12" r="2"></circle></svg>',
         blindness: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7c2 0 3.8.6 5.3 1.5M22 12s-3.5 7-10 7c-2 0-3.8-.6-5.3-1.5M2 2l20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
-        fontSizeStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h2l1-3h4l1 3h2L10 5H8L4 19Zm11-8V9h7v2h-2.5v8h-2V11H15Z"></path></svg>',
+        fontSizeStep: '<svg xmlns="http://www.w3.org/2000/svg" fill="#000000" width="800px" height="800px" viewBox="0 0 24 24"><path d="M2,21H6a1,1,0,0,0,0-2H5.376l1.951-6h5.346l1.95,6H14a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2H16.727L11.751,3.69A1,1,0,0,0,10.8,3H9.2a1,1,0,0,0-.951.69L3.273,19H2a1,1,0,0,0,0,2ZM9.927,5h.146l1.95,6H7.977ZM23,16a1,1,0,0,1-1,1H19a1,1,0,0,1,0-2h.365l-.586-1.692H17a1,1,0,0,1,0-2h1.087L17.288,9h-.576l-.113.327a1,1,0,0,1-1.891-.654l.346-1A1,1,0,0,1,16,7h2a1,1,0,0,1,.945.673L21.481,15H22A1,1,0,0,1,23,16Z"/></svg>',
         fontWeightStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h8a4 4 0 0 1 0 8H6V4Zm0 8h9a4 4 0 0 1 0 8H6v-8Z" fill="none" stroke="currentColor" stroke-width="2"></path></svg>',
         lineHeightStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>',
         letterSpacingStep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zM16 6h2v12h-2zM9 18l3-12 3 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>',
@@ -1300,11 +1584,16 @@
         lowSaturation: 'Saturation',
         monochrome: 'Mono',
         languageName: 'English',
+        languageDir: 'ltr',
         languageIcon: '????',
         language: 'Language',
         auto: 'Auto',
         on: 'On',
         off: 'Off',
+        play: 'Play',
+        pause: 'Pause',
+        resume: 'Resume',
+        stop: 'Stop',
         stateSaved: 'Accessibility settings saved',
         panelOpened: 'Accessibility panel opened',
         panelClosed: 'Accessibility panel closed'
@@ -1357,7 +1646,11 @@
         controls: {},
         profileButtons: {},
         languageButtons: {},
-        languageGrid: null
+        languageMenu: null,
+        languageMenuGrid: null,
+        headerLanguageBtn: null,
+        headerLanguageLabel: null,
+        headerLanguageIcon: null
     };
 
     var uiDefinition = {
@@ -1401,6 +1694,13 @@
     };
 
     var speechBound = false;
+    var speechToolbarBound = false;
+    var speechToolbar = null;
+    var speechSelectionText = '';
+    var speechToolbarPlayBtn = null;
+    var speechToolbarPauseBtn = null;
+    var speechToolbarStopBtn = null;
+    var speechToolbarMode = 'idle';
     var readingGuideBound = false;
     var dyslexiaFontInjected = false;
 
@@ -1463,6 +1763,17 @@
         return dir === 'rtl' ? 'rtl' : 'ltr';
     }
 
+    function getLanguageDir(langKey) {
+        if (langKey === 'auto') {
+            return resolvePageDir();
+        }
+        var locale = locales[langKey];
+        if (locale && (locale.languageDir === 'rtl' || locale.languageDir === 'ltr')) {
+            return locale.languageDir;
+        }
+        return resolvePageDir();
+    }
+
     function resolvePosition(position) {
         var pos = String(position || '').toLowerCase();
         if (pos === 'left' || pos === 'right') {
@@ -1500,6 +1811,10 @@
 
     function getEffectiveLang() {
         return state.lang === 'auto' ? resolvePageLang() : state.lang;
+    }
+
+    function getEffectiveDir() {
+        return getLanguageDir(state.lang);
     }
 
     function getIconMarkup(iconKey) {
@@ -1648,22 +1963,197 @@
         dyslexiaFontInjected = true;
     }
 
+    function hideSpeechToolbar() {
+        if (!speechToolbar) {
+            return;
+        }
+        speechToolbar.hidden = true;
+        speechSelectionText = '';
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        speechToolbarMode = 'idle';
+    }
+
+    function setSpeechToolbarMode(mode) {
+        speechToolbarMode = mode;
+        if (!speechToolbarPlayBtn || !speechToolbarPauseBtn || !speechToolbarStopBtn) {
+            return;
+        }
+        var isPlaying = mode === 'playing' || mode === 'paused';
+        speechToolbarPlayBtn.hidden = isPlaying;
+        speechToolbarPauseBtn.hidden = !isPlaying;
+        speechToolbarStopBtn.hidden = !isPlaying;
+    }
+
+    function refreshSpeechToolbarA11yLabels() {
+        if (!speechToolbarPlayBtn || !speechToolbarPauseBtn || !speechToolbarStopBtn) {
+            return;
+        }
+        var pauseLabel = speechToolbarMode === 'paused' ? t('resume') : t('pause');
+        speechToolbarPlayBtn.setAttribute('aria-label', t('play'));
+        speechToolbarPlayBtn.setAttribute('title', t('play'));
+        speechToolbarPauseBtn.setAttribute('aria-label', pauseLabel);
+        speechToolbarPauseBtn.setAttribute('title', pauseLabel);
+        speechToolbarStopBtn.setAttribute('aria-label', t('stop'));
+        speechToolbarStopBtn.setAttribute('title', t('stop'));
+    }
+
+    function updateSpeechToolbarState() {
+        if (!speechToolbar || !window.speechSynthesis) {
+            return;
+        }
+        if (!window.speechSynthesis.speaking) {
+            setSpeechToolbarMode('idle');
+            refreshSpeechToolbarA11yLabels();
+            return;
+        }
+        setSpeechToolbarMode(window.speechSynthesis.paused ? 'paused' : 'playing');
+        refreshSpeechToolbarA11yLabels();
+    }
+
+    function ensureSpeechToolbarElement() {
+        if (speechToolbar) {
+            return speechToolbar;
+        }
+        var toolbar = document.createElement('div');
+        toolbar.className = 'ksu-a11y-speech-toolbar';
+        toolbar.hidden = true;
+
+        var playBtn = document.createElement('button');
+        playBtn.type = 'button';
+        playBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        playBtn.dataset.action = 'play';
+        setIcon(playBtn, 'speechPlay');
+
+        var pauseBtn = document.createElement('button');
+        pauseBtn.type = 'button';
+        pauseBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        pauseBtn.dataset.action = 'pause';
+        setIcon(pauseBtn, 'speechPause');
+
+        var stopBtn = document.createElement('button');
+        stopBtn.type = 'button';
+        stopBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        stopBtn.dataset.action = 'stop';
+        setIcon(stopBtn, 'speechStop');
+
+        playBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!speechSelectionText || !window.speechSynthesis) {
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                var utterance = new window.SpeechSynthesisUtterance(speechSelectionText);
+                var effectiveLang = getEffectiveLang();
+                utterance.lang = effectiveLang === 'ar' ? 'ar-SA' : effectiveLang === 'ur' ? 'ur-PK' : 'en-US';
+                utterance.rate = 1;
+                utterance.onstart = function () {
+                    setSpeechToolbarMode('playing');
+                    updateSpeechToolbarState();
+                };
+                utterance.onend = function () {
+                    setSpeechToolbarMode('idle');
+                    updateSpeechToolbarState();
+                };
+                utterance.onerror = function () {
+                    setSpeechToolbarMode('idle');
+                    updateSpeechToolbarState();
+                };
+                setSpeechToolbarMode('playing');
+                window.speechSynthesis.speak(utterance);
+                updateSpeechToolbarState();
+            } catch (error) {
+                // Ignore speech synthesis errors.
+            }
+        });
+
+        pauseBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!window.speechSynthesis || !window.speechSynthesis.speaking) {
+                return;
+            }
+            try {
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                    setSpeechToolbarMode('playing');
+                } else {
+                    window.speechSynthesis.pause();
+                    setSpeechToolbarMode('paused');
+                }
+                updateSpeechToolbarState();
+            } catch (error) {
+                // Ignore speech synthesis errors.
+            }
+        });
+
+        stopBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!window.speechSynthesis) {
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                setSpeechToolbarMode('idle');
+                updateSpeechToolbarState();
+            } catch (error) {
+                // Ignore speech synthesis errors.
+            }
+        });
+
+        toolbar.appendChild(playBtn);
+        toolbar.appendChild(pauseBtn);
+        toolbar.appendChild(stopBtn);
+        document.body.appendChild(toolbar);
+        speechToolbar = toolbar;
+        speechToolbarPlayBtn = playBtn;
+        speechToolbarPauseBtn = pauseBtn;
+        speechToolbarStopBtn = stopBtn;
+        setSpeechToolbarMode('idle');
+        refreshSpeechToolbarA11yLabels();
+        return toolbar;
+    }
+
+    function positionSpeechToolbar(selection) {
+        if (!selection || !selection.rangeCount || !speechToolbar) {
+            return;
+        }
+        var rect = selection.getRangeAt(0).getBoundingClientRect();
+        if (!rect || (!rect.width && !rect.height)) {
+            return;
+        }
+        var top = rect.top - 44;
+        if (top < 8) {
+            top = rect.bottom + 8;
+        }
+        speechToolbar.style.top = String(top) + 'px';
+        speechToolbar.style.left = String(rect.left + rect.width / 2) + 'px';
+    }
+
     function handleReadSelectedText() {
         if (!state.readSelectedText || !window.getSelection || !window.speechSynthesis) {
+            hideSpeechToolbar();
             return;
         }
-        var text = String(window.getSelection().toString() || '').trim();
+        var selection = window.getSelection();
+        var text = String(selection.toString() || '').trim();
         if (!text) {
+            hideSpeechToolbar();
             return;
         }
-        try {
+        if (speechSelectionText && speechSelectionText !== text && window.speechSynthesis) {
             window.speechSynthesis.cancel();
-            var utterance = new window.SpeechSynthesisUtterance(text);
-            utterance.lang = state.lang === 'ar' ? 'ar-SA' : 'en-US';
-            window.speechSynthesis.speak(utterance);
-        } catch (error) {
-            // Ignore speech errors.
         }
+        speechSelectionText = text;
+        ensureSpeechToolbarElement();
+        positionSpeechToolbar(selection);
+        setSpeechToolbarMode('idle');
+        speechToolbar.hidden = false;
+        updateSpeechToolbarState();
     }
 
     function bindSpeechEventsIfNeeded() {
@@ -1671,7 +2161,34 @@
             return;
         }
         document.addEventListener('mouseup', handleReadSelectedText);
+        document.addEventListener('keyup', handleReadSelectedText);
         speechBound = true;
+
+        if (speechToolbarBound) {
+            return;
+        }
+        document.addEventListener('mousedown', function (event) {
+            if (!speechToolbar || speechToolbar.hidden) {
+                return;
+            }
+            if (speechToolbar.contains(event.target)) {
+                return;
+            }
+            var activeSelection = window.getSelection ? String(window.getSelection().toString() || '').trim() : '';
+            if (!activeSelection) {
+                hideSpeechToolbar();
+            }
+        });
+        document.addEventListener('selectionchange', function () {
+            if (!state.readSelectedText) {
+                return;
+            }
+            var activeSelection = window.getSelection ? String(window.getSelection().toString() || '').trim() : '';
+            if (!activeSelection) {
+                hideSpeechToolbar();
+            }
+        });
+        speechToolbarBound = true;
     }
 
     function ensureReadingGuideElement() {
@@ -1702,6 +2219,7 @@
 
     function updateRootClasses() {
         var root = document.documentElement;
+        var effectiveDir = getEffectiveDir();
 
         root.classList.toggle('ksu-a11y-highlight-links', state.highlightLinks);
         root.classList.toggle('ksu-a11y-highlight-headings', state.highlightHeadings);
@@ -1732,11 +2250,27 @@
 
         if (dom.host) {
             dom.host.classList.toggle('ksu-a11y-theme-dark', state.darkMode);
+            dom.host.dataset.dir = effectiveDir;
+            dom.host.setAttribute('dir', effectiveDir);
+            dom.host.dataset.position = resolvePosition(options.position);
+        }
+        if (dom.panel) {
+            dom.panel.setAttribute('dir', effectiveDir);
+        }
+        if (dom.languageMenu) {
+            dom.languageMenu.setAttribute('dir', effectiveDir);
         }
 
         applyDyslexiaFont();
         bindSpeechEventsIfNeeded();
         bindReadingGuideIfNeeded();
+
+        if (!state.readSelectedText) {
+            hideSpeechToolbar();
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        }
 
         var guide = ensureReadingGuideElement();
         guide.style.display = state.readingGuide ? 'block' : 'none';
@@ -1859,7 +2393,7 @@
     function createLanguageButton(langKey) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-profile-btn';
+        button.className = 'ksu-a11y-profile-btn ksu-a11y-language-option';
         button.dataset.lang = langKey;
         button.setAttribute('title', getLanguageLabel(langKey));
 
@@ -1874,34 +2408,34 @@
         button.appendChild(icon);
         button.appendChild(label);
         button.addEventListener('click', function () {
-            setLanguage(langKey); closeLanguageMenu();
+            setLanguage(langKey);
+            closeLanguageMenu();
         });
 
         dom.languageButtons[langKey] = { button: button, icon: icon, label: label };
-            closeLanguageMenu();
-            return button;
-        }
+        return button;
+    }
 
-        function toggleLanguageMenu() {
-            if (!dom.languageMenu || !dom.headerLanguageBtn) {
-                return;
-            }
-            var isOpen = !dom.languageMenu.hidden;
-            dom.languageMenu.hidden = isOpen;
-            dom.headerLanguageBtn.setAttribute('aria-expanded', (!isOpen).toString());
+    function toggleLanguageMenu() {
+        if (!dom.languageMenu || !dom.headerLanguageBtn) {
+            return;
         }
+        var isOpen = !dom.languageMenu.hidden;
+        dom.languageMenu.hidden = isOpen;
+        dom.headerLanguageBtn.setAttribute('aria-expanded', (!isOpen).toString());
+    }
 
-        function closeLanguageMenu() {
-            if (!dom.languageMenu) {
-                return;
-            }
-            if (!dom.languageMenu.hidden) {
-                dom.languageMenu.hidden = true;
-            }
-            if (dom.headerLanguageBtn) {
-                dom.headerLanguageBtn.setAttribute('aria-expanded', 'false');
-            }
+    function closeLanguageMenu() {
+        if (!dom.languageMenu) {
+            return;
         }
+        if (!dom.languageMenu.hidden) {
+            dom.languageMenu.hidden = true;
+        }
+        if (dom.headerLanguageBtn) {
+            dom.headerLanguageBtn.setAttribute('aria-expanded', 'false');
+        }
+    }
 
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
@@ -1916,6 +2450,7 @@
             return;
         }
         dom.panel.hidden = true;
+        closeLanguageMenu();
         dom.toggleButton.style.display = '';
         dom.toggleButton.setAttribute('aria-expanded', 'false');
         dom.toggleButton.focus();
@@ -2001,9 +2536,9 @@
             toggleLanguageMenu();
         });
 
-        headerActions.appendChild(languageBtn);
-        header.appendChild(title);
         header.appendChild(headerActions);
+        header.appendChild(languageBtn);
+        header.appendChild(title);
 
         var languageMenu = document.createElement('div');
         languageMenu.className = 'ksu-a11y-language-dropdown';
@@ -2063,10 +2598,13 @@
         resetBtn.appendChild(resetIcon);
         resetBtn.appendChild(resetLabel);
         resetBtn.addEventListener('click', function () { resetState(true); });
-        body.appendChild(resetBtn);
-
         panel.appendChild(header);
         panel.appendChild(body);
+
+        var footer = document.createElement('div');
+        footer.className = 'ksu-a11y-panel-footer';
+        footer.appendChild(resetBtn);
+        panel.appendChild(footer);
 
         dom.controls.headerTitle = title;
         dom.controls.headerReset = headerReset;
@@ -2190,6 +2728,27 @@
                 }
             }
         }
+        if (dom.headerLanguageBtn) {
+            dom.headerLanguageBtn.setAttribute('title', getLanguageLabel(state.lang));
+        }
+        if (dom.headerLanguageLabel) {
+            dom.headerLanguageLabel.textContent = getLanguageLabel(state.lang);
+        }
+        if (dom.headerLanguageIcon) {
+            dom.headerLanguageIcon.innerHTML = getLanguageIcon(state.lang);
+        }
+        if (speechToolbar) {
+            if (speechToolbarPlayBtn) {
+                setIcon(speechToolbarPlayBtn, 'speechPlay');
+            }
+            if (speechToolbarPauseBtn) {
+                setIcon(speechToolbarPauseBtn, 'speechPause');
+            }
+            if (speechToolbarStopBtn) {
+                setIcon(speechToolbarStopBtn, 'speechStop');
+            }
+            refreshSpeechToolbarA11yLabels();
+        }
     }
 
     function refreshIcons() {
@@ -2290,6 +2849,7 @@
             return;
         }
         state.lang = lang;
+        closeLanguageMenu();
         if (dom.initialized) {
             apply(true);
         }
@@ -2350,6 +2910,15 @@
         if (guide && guide.parentNode) {
             guide.parentNode.removeChild(guide);
         }
+        if (speechToolbar && speechToolbar.parentNode) {
+            speechToolbar.parentNode.removeChild(speechToolbar);
+        }
+        speechToolbar = null;
+        speechSelectionText = '';
+        speechToolbarPlayBtn = null;
+        speechToolbarPauseBtn = null;
+        speechToolbarStopBtn = null;
+        speechToolbarMode = 'idle';
 
         dom.host.parentNode.removeChild(dom.host);
         dom.host = null;
