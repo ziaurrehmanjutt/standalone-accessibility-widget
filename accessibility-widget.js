@@ -1,10 +1,10 @@
 (function () {
     'use strict';
 
-    var STORAGE_KEY = 'ksu-a11y-widget-settings';
-    var STYLE_ID = 'ksu-a11y-widget-style';
-    var ROOT_ID = 'ksu-a11y-widget-root';
-    var READING_GUIDE_ID = 'ksu-a11y-reading-guide';
+    var STORAGE_KEY = 'zur-a11y-widget-settings';
+    var STYLE_ID = 'zur-a11y-widget-style';
+    var ROOT_ID = 'zur-a11y-widget-root';
+    var READING_GUIDE_ID = 'zur-a11y-reading-guide';
     var DEFAULT_LANG = 'en';
     var LANGUAGE_LABELS = {
         en: 'English',
@@ -476,7 +476,7 @@
             return;
         }
         var link = document.createElement('link');
-        link.id = 'ksu-a11y-dyslexia-font';
+        link.id = 'zur-a11y-dyslexia-font';
         link.rel = 'stylesheet';
         link.href = 'https://fonts.cdnfonts.com/css/opendyslexic';
         document.head.appendChild(link);
@@ -537,24 +537,24 @@
             return speechToolbar;
         }
         var toolbar = document.createElement('div');
-        toolbar.className = 'ksu-a11y-speech-toolbar';
+        toolbar.className = 'zur-a11y-speech-toolbar';
         toolbar.hidden = true;
 
         var playBtn = document.createElement('button');
         playBtn.type = 'button';
-        playBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        playBtn.className = 'zur-a11y-speech-toolbar-btn';
         playBtn.dataset.action = 'play';
         setIcon(playBtn, 'speechPlay');
 
         var pauseBtn = document.createElement('button');
         pauseBtn.type = 'button';
-        pauseBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        pauseBtn.className = 'zur-a11y-speech-toolbar-btn';
         pauseBtn.dataset.action = 'pause';
         setIcon(pauseBtn, 'speechPause');
 
         var stopBtn = document.createElement('button');
         stopBtn.type = 'button';
-        stopBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        stopBtn.className = 'zur-a11y-speech-toolbar-btn';
         stopBtn.dataset.action = 'stop';
         setIcon(stopBtn, 'speechStop');
 
@@ -716,7 +716,7 @@
         if (!guide) {
             guide = document.createElement('div');
             guide.id = READING_GUIDE_ID;
-            guide.className = 'ksu-a11y-reading-guide';
+            guide.className = 'zur-a11y-reading-guide';
             guide.style.top = '-120px';
             document.body.appendChild(guide);
         }
@@ -741,24 +741,24 @@
         var root = document.documentElement;
         var effectiveDir = getEffectiveDir();
 
-        root.classList.toggle('ksu-a11y-highlight-links', state.highlightLinks);
-        root.classList.toggle('ksu-a11y-highlight-headings', state.highlightHeadings);
-        root.classList.toggle('ksu-a11y-big-cursor', state.bigCursor);
-        root.classList.toggle('ksu-a11y-reduce-motion', state.reduceMotion);
-        root.classList.toggle('ksu-a11y-focus-highlight', state.focusHighlight);
-        root.classList.toggle('ksu-a11y-hide-images', state.hideImages);
-        root.classList.toggle('ksu-a11y-reading-guide-enabled', state.readingGuide);
-        root.classList.toggle('ksu-a11y-text-align', state.textAlign);
-        root.classList.toggle('ksu-a11y-dyslexia-font', state.dyslexiaFont);
-        root.classList.toggle('ksu-a11y-high-contrast', state.highContrast);
-        root.classList.toggle('ksu-a11y-low-saturation', state.lowSaturation);
-        root.classList.toggle('ksu-a11y-monochrome', state.monochrome);
+        root.classList.toggle('zur-a11y-highlight-links', state.highlightLinks);
+        root.classList.toggle('zur-a11y-highlight-headings', state.highlightHeadings);
+        root.classList.toggle('zur-a11y-big-cursor', state.bigCursor);
+        root.classList.toggle('zur-a11y-reduce-motion', state.reduceMotion);
+        root.classList.toggle('zur-a11y-focus-highlight', state.focusHighlight);
+        root.classList.toggle('zur-a11y-hide-images', state.hideImages);
+        root.classList.toggle('zur-a11y-reading-guide-enabled', state.readingGuide);
+        root.classList.toggle('zur-a11y-text-align', state.textAlign);
+        root.classList.toggle('zur-a11y-dyslexia-font', state.dyslexiaFont);
+        root.classList.toggle('zur-a11y-high-contrast', state.highContrast);
+        root.classList.toggle('zur-a11y-low-saturation', state.lowSaturation);
+        root.classList.toggle('zur-a11y-monochrome', state.monochrome);
 
-        root.style.setProperty('--ksu-a11y-font-scale', String(FONT_SCALES[state.fontSizeStep]));
-        root.style.setProperty('--ksu-a11y-font-weight', String(FONT_WEIGHTS[state.fontWeightStep]));
-        root.style.setProperty('--ksu-a11y-line-height', String(LINE_HEIGHTS[state.lineHeightStep]));
-        root.style.setProperty('--ksu-a11y-letter-spacing', String(LETTER_SPACING[state.letterSpacingStep]));
-        root.style.setProperty('--ksu-a11y-word-spacing', String(WORD_SPACING[state.wordSpacingStep]));
+        root.style.setProperty('--zur-a11y-font-scale', String(FONT_SCALES[state.fontSizeStep]));
+        root.style.setProperty('--zur-a11y-font-weight', String(FONT_WEIGHTS[state.fontWeightStep]));
+        root.style.setProperty('--zur-a11y-line-height', String(LINE_HEIGHTS[state.lineHeightStep]));
+        root.style.setProperty('--zur-a11y-letter-spacing', String(LETTER_SPACING[state.letterSpacingStep]));
+        root.style.setProperty('--zur-a11y-word-spacing', String(WORD_SPACING[state.wordSpacingStep]));
 
         try {
             root.style.zoom = String(ZOOM_VALUES[state.zoomStep]);
@@ -768,7 +768,7 @@
         }
 
         if (dom.host) {
-            dom.host.classList.toggle('ksu-a11y-theme-dark', state.darkMode);
+            dom.host.classList.toggle('zur-a11y-theme-dark', state.darkMode);
             dom.host.dataset.dir = effectiveDir;
             dom.host.setAttribute('dir', effectiveDir);
             dom.host.dataset.position = resolvePosition(options.position);
@@ -842,17 +842,17 @@
     function createFeatureButton(config) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-btn';
+        button.className = 'zur-a11y-btn';
         button.dataset.key = config.key;
         button.setAttribute('title', t(config.key));
 
         var icon = document.createElement('span');
-        icon.className = 'ksu-a11y-btn-icon';
+        icon.className = 'zur-a11y-btn-icon';
         icon.setAttribute('aria-hidden', 'true');
         setIcon(icon, config.key);
 
         var label = document.createElement('span');
-        label.className = 'ksu-a11y-btn-label';
+        label.className = 'zur-a11y-btn-label';
         label.textContent = t(config.key);
 
         button.appendChild(icon);
@@ -860,10 +860,10 @@
 
         if (config.kind === 'step') {
             var dots = document.createElement('span');
-            dots.className = 'ksu-a11y-dots';
+            dots.className = 'zur-a11y-dots';
             for (var i = 0; i < config.max; i += 1) {
                 var dot = document.createElement('span');
-                dot.className = 'ksu-a11y-dot';
+                dot.className = 'zur-a11y-dot';
                 dots.appendChild(dot);
             }
             button.appendChild(dots);
@@ -886,17 +886,17 @@
     function createProfileButton(modeKey) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-profile-btn';
+        button.className = 'zur-a11y-profile-btn';
         button.dataset.mode = modeKey;
         button.setAttribute('title', t(modeKey));
 
         var icon = document.createElement('span');
-        icon.className = 'ksu-a11y-profile-icon';
+        icon.className = 'zur-a11y-profile-icon';
         icon.setAttribute('aria-hidden', 'true');
         setIcon(icon, modeKey);
 
         var label = document.createElement('span');
-        label.className = 'ksu-a11y-profile-label';
+        label.className = 'zur-a11y-profile-label';
         label.textContent = t(modeKey);
 
         button.appendChild(icon);
@@ -912,16 +912,16 @@
     function createLanguageButton(langKey) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-profile-btn ksu-a11y-language-option';
+        button.className = 'zur-a11y-profile-btn zur-a11y-language-option';
         button.dataset.lang = langKey;
         button.setAttribute('title', getLanguageLabel(langKey));
 
         var icon = document.createElement('span');
-        icon.className = 'ksu-a11y-language-icon';
+        icon.className = 'zur-a11y-language-icon';
         icon.innerHTML = getLanguageIcon(langKey);
 
         var label = document.createElement('span');
-        label.className = 'ksu-a11y-profile-label';
+        label.className = 'zur-a11y-profile-label';
         label.textContent = getLanguageLabel(langKey);
 
         button.appendChild(icon);
@@ -958,7 +958,7 @@
 
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
-        title.className = 'ksu-a11y-section-title';
+        title.className = 'zur-a11y-section-title';
         title.dataset.i18n = key;
         title.textContent = t(key);
         parent.appendChild(title);
@@ -990,29 +990,29 @@
 
     function buildPanel() {
         var panel = document.createElement('section');
-        panel.className = 'ksu-a11y-panel';
+        panel.className = 'zur-a11y-panel';
         panel.hidden = true;
         panel.tabIndex = -1;
-        panel.id = 'ksu-a11y-panel';
+        panel.id = 'zur-a11y-panel';
         panel.setAttribute('role', 'dialog');
         panel.setAttribute('aria-label', t('title'));
 
         var header = document.createElement('div');
-        header.className = 'ksu-a11y-panel-header';
+        header.className = 'zur-a11y-panel-header';
 
         var title = document.createElement('span');
-        title.className = 'ksu-a11y-panel-title';
+        title.className = 'zur-a11y-panel-title';
         title.textContent = t('title');
 
         var headerActions = document.createElement('div');
-        headerActions.className = 'ksu-a11y-header-actions';
+        headerActions.className = 'zur-a11y-header-actions';
 
         var headerReset = document.createElement('button');
         headerReset.type = 'button';
-        headerReset.className = 'ksu-a11y-header-icon-btn';
+        headerReset.className = 'zur-a11y-header-icon-btn';
         headerReset.setAttribute('title', t('resetAll'));
         var headerResetIcon = document.createElement('span');
-        headerResetIcon.className = 'ksu-a11y-icon';
+        headerResetIcon.className = 'zur-a11y-icon';
         setIcon(headerResetIcon, 'reset');
         headerReset.appendChild(headerResetIcon);
         headerReset.addEventListener('click', function () {
@@ -1021,10 +1021,10 @@
 
         var closeBtn = document.createElement('button');
         closeBtn.type = 'button';
-        closeBtn.className = 'ksu-a11y-header-icon-btn';
+        closeBtn.className = 'zur-a11y-header-icon-btn';
         closeBtn.setAttribute('title', t('close'));
         var closeIcon = document.createElement('span');
-        closeIcon.className = 'ksu-a11y-icon';
+        closeIcon.className = 'zur-a11y-icon';
         setIcon(closeIcon, 'close');
         closeBtn.appendChild(closeIcon);
         closeBtn.addEventListener('click', closePanel);
@@ -1034,20 +1034,20 @@
 
         var languageBtn = document.createElement('button');
         languageBtn.type = 'button';
-        languageBtn.className = 'ksu-a11y-header-language-btn';
+        languageBtn.className = 'zur-a11y-header-language-btn';
         languageBtn.setAttribute('title', t('language'));
         languageBtn.setAttribute('aria-expanded', 'false');
 
         var languageBtnIcon = document.createElement('span');
-        languageBtnIcon.className = 'ksu-a11y-language-icon';
+        languageBtnIcon.className = 'zur-a11y-language-icon';
         languageBtnIcon.innerHTML = getLanguageIcon(state.lang);
 
         var languageBtnLabel = document.createElement('span');
-        languageBtnLabel.className = 'ksu-a11y-header-language-label';
+        languageBtnLabel.className = 'zur-a11y-header-language-label';
         languageBtnLabel.textContent = getLanguageLabel(state.lang);
 
         var languageBtnArrow = document.createElement('span');
-        languageBtnArrow.className = 'ksu-a11y-header-language-chevron';
+        languageBtnArrow.className = 'zur-a11y-header-language-chevron';
         languageBtnArrow.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
         languageBtn.appendChild(languageBtnIcon);
@@ -1063,11 +1063,11 @@
         header.appendChild(title);
 
         var languageMenu = document.createElement('div');
-        languageMenu.className = 'ksu-a11y-language-dropdown';
+        languageMenu.className = 'zur-a11y-language-dropdown';
         languageMenu.hidden = true;
 
         var languageMenuGrid = document.createElement('div');
-        languageMenuGrid.className = 'ksu-a11y-profile-grid ksu-a11y-language-menu-grid';
+        languageMenuGrid.className = 'zur-a11y-profile-grid zur-a11y-language-menu-grid';
         var languageKeys = ['auto'].concat(getAvailableLanguages());
         for (var l = 0; l < languageKeys.length; l += 1) {
             languageMenuGrid.appendChild(createLanguageButton(languageKeys[l]));
@@ -1082,12 +1082,12 @@
         dom.headerLanguageIcon = languageBtnIcon;
 
         var body = document.createElement('div');
-        body.className = 'ksu-a11y-body';
+        body.className = 'zur-a11y-body';
 
         var profilesWrap = document.createElement('div');
         addSectionTitle(profilesWrap, 'profiles');
         var profilesGrid = document.createElement('div');
-        profilesGrid.className = 'ksu-a11y-profile-grid';
+        profilesGrid.className = 'zur-a11y-profile-grid';
         for (var i = 0; i < MODE_KEYS.length; i += 1) {
             profilesGrid.appendChild(createProfileButton(MODE_KEYS[i]));
         }
@@ -1099,7 +1099,7 @@
             var groupWrap = document.createElement('div');
             addSectionTitle(groupWrap, groups[g]);
             var grid = document.createElement('div');
-            grid.className = 'ksu-a11y-grid';
+            grid.className = 'zur-a11y-grid';
             var items = uiDefinition[groups[g]];
             for (var p = 0; p < items.length; p += 1) {
                 grid.appendChild(createFeatureButton(items[p]));
@@ -1110,12 +1110,12 @@
 
         var resetBtn = document.createElement('button');
         resetBtn.type = 'button';
-        resetBtn.className = 'ksu-a11y-reset-btn';
+        resetBtn.className = 'zur-a11y-reset-btn';
         var resetIcon = document.createElement('span');
-        resetIcon.className = 'ksu-a11y-icon';
+        resetIcon.className = 'zur-a11y-icon';
         setIcon(resetIcon, 'reset');
         var resetLabel = document.createElement('span');
-        resetLabel.className = 'ksu-a11y-reset-label';
+        resetLabel.className = 'zur-a11y-reset-label';
         resetLabel.textContent = t('resetAll');
         resetBtn.appendChild(resetIcon);
         resetBtn.appendChild(resetLabel);
@@ -1127,7 +1127,7 @@
         panel.appendChild(body);
 
         var footer = document.createElement('div');
-        footer.className = 'ksu-a11y-panel-footer';
+        footer.className = 'zur-a11y-panel-footer';
         footer.appendChild(resetBtn);
         panel.appendChild(footer);
 
@@ -1150,27 +1150,27 @@
 
         var host = document.createElement('section');
         host.id = ROOT_ID;
-        host.className = 'ksu-a11y-widget';
+        host.className = 'zur-a11y-widget';
         host.dataset.position = resolvePosition(options.position);
         host.style.zIndex = String(options.zIndex);
 
         var liveRegion = document.createElement('div');
-        liveRegion.className = 'ksu-a11y-live';
+        liveRegion.className = 'zur-a11y-live';
         liveRegion.setAttribute('aria-live', 'polite');
         liveRegion.setAttribute('aria-atomic', 'true');
 
         var toggleButton = document.createElement('button');
         toggleButton.type = 'button';
-        toggleButton.className = 'ksu-a11y-launcher';
+        toggleButton.className = 'zur-a11y-launcher';
         toggleButton.setAttribute('aria-expanded', 'false');
-        toggleButton.setAttribute('aria-controls', 'ksu-a11y-panel');
+        toggleButton.setAttribute('aria-controls', 'zur-a11y-panel');
         toggleButton.setAttribute('aria-label', t('open'));
 
         var launcherIcon = document.createElement('span');
-        launcherIcon.className = 'ksu-a11y-launcher-icon';
+        launcherIcon.className = 'zur-a11y-launcher-icon';
         setIcon(launcherIcon, 'launcher');
         var launcherLabel = document.createElement('span');
-        launcherLabel.className = 'ksu-a11y-launcher-label';
+        launcherLabel.className = 'zur-a11y-launcher-label';
         launcherLabel.textContent = t('title');
 
         toggleButton.appendChild(launcherIcon);
@@ -1220,7 +1220,7 @@
         dom.controls.bottomReset.setAttribute('title', t('resetAll'));
         dom.controls.bottomResetLabel.textContent = t('resetAll');
 
-        var sectionTitles = dom.panel.querySelectorAll('.ksu-a11y-section-title');
+        var sectionTitles = dom.panel.querySelectorAll('.zur-a11y-section-title');
         for (var i = 0; i < sectionTitles.length; i += 1) {
             var sectionKey = sectionTitles[i].getAttribute('data-i18n');
             sectionTitles[i].textContent = t(sectionKey);
@@ -1315,7 +1315,7 @@
             if (control.config.kind === 'step') {
                 button.setAttribute('aria-pressed', 'true');
                 button.dataset.step = String(state[key]);
-                var dots = button.querySelectorAll('.ksu-a11y-dot');
+                var dots = button.querySelectorAll('.zur-a11y-dot');
                 for (var d = 0; d < dots.length; d += 1) {
                     dots[d].classList.toggle('is-active', d < state[key]);
                 }
@@ -1419,7 +1419,7 @@
         root.style.transform = '';
         root.style.transformOrigin = '';
         root.className = root.className
-            .replace(/\bksu-a11y-[\w-]+\b/g, '')
+            .replace(/\bzur-a11y-[\w-]+\b/g, '')
             .replace(/\s{2,}/g, ' ')
             .trim();
 
@@ -1482,10 +1482,10 @@
 (function () {
     'use strict';
 
-    var STORAGE_KEY = 'ksu-a11y-widget-settings';
-    var STYLE_ID = 'ksu-a11y-widget-style';
-    var ROOT_ID = 'ksu-a11y-widget-root';
-    var READING_GUIDE_ID = 'ksu-a11y-reading-guide';
+    var STORAGE_KEY = 'zur-a11y-widget-settings';
+    var STYLE_ID = 'zur-a11y-widget-style';
+    var ROOT_ID = 'zur-a11y-widget-root';
+    var READING_GUIDE_ID = 'zur-a11y-reading-guide';
     var DEFAULT_LANG = 'en';
     var LANGUAGE_LABELS = {
         en: 'English',
@@ -1956,7 +1956,7 @@
             return;
         }
         var link = document.createElement('link');
-        link.id = 'ksu-a11y-dyslexia-font';
+        link.id = 'zur-a11y-dyslexia-font';
         link.rel = 'stylesheet';
         link.href = 'https://fonts.cdnfonts.com/css/opendyslexic';
         document.head.appendChild(link);
@@ -2017,24 +2017,24 @@
             return speechToolbar;
         }
         var toolbar = document.createElement('div');
-        toolbar.className = 'ksu-a11y-speech-toolbar';
+        toolbar.className = 'zur-a11y-speech-toolbar';
         toolbar.hidden = true;
 
         var playBtn = document.createElement('button');
         playBtn.type = 'button';
-        playBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        playBtn.className = 'zur-a11y-speech-toolbar-btn';
         playBtn.dataset.action = 'play';
         setIcon(playBtn, 'speechPlay');
 
         var pauseBtn = document.createElement('button');
         pauseBtn.type = 'button';
-        pauseBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        pauseBtn.className = 'zur-a11y-speech-toolbar-btn';
         pauseBtn.dataset.action = 'pause';
         setIcon(pauseBtn, 'speechPause');
 
         var stopBtn = document.createElement('button');
         stopBtn.type = 'button';
-        stopBtn.className = 'ksu-a11y-speech-toolbar-btn';
+        stopBtn.className = 'zur-a11y-speech-toolbar-btn';
         stopBtn.dataset.action = 'stop';
         setIcon(stopBtn, 'speechStop');
 
@@ -2196,7 +2196,7 @@
         if (!guide) {
             guide = document.createElement('div');
             guide.id = READING_GUIDE_ID;
-            guide.className = 'ksu-a11y-reading-guide';
+            guide.className = 'zur-a11y-reading-guide';
             guide.style.top = '-120px';
             document.body.appendChild(guide);
         }
@@ -2221,26 +2221,26 @@
         var root = document.documentElement;
         var effectiveDir = getEffectiveDir();
 
-        root.classList.toggle('ksu-a11y-highlight-links', state.highlightLinks);
-        root.classList.toggle('ksu-a11y-highlight-headings', state.highlightHeadings);
-        root.classList.toggle('ksu-a11y-big-cursor', state.bigCursor);
-        root.classList.toggle('ksu-a11y-reduce-motion', state.reduceMotion);
-        root.classList.toggle('ksu-a11y-focus-highlight', state.focusHighlight);
-        root.classList.toggle('ksu-a11y-hide-images', state.hideImages);
-        root.classList.toggle('ksu-a11y-reading-guide-enabled', state.readingGuide);
-        root.classList.toggle('ksu-a11y-text-align', state.textAlign);
-        root.classList.toggle('ksu-a11y-dyslexia-font', state.dyslexiaFont);
-        root.classList.toggle('ksu-a11y-high-contrast', state.highContrast);
-        root.classList.toggle('ksu-a11y-low-saturation', state.lowSaturation);
-        root.classList.toggle('ksu-a11y-monochrome', state.monochrome);
+        root.classList.toggle('zur-a11y-highlight-links', state.highlightLinks);
+        root.classList.toggle('zur-a11y-highlight-headings', state.highlightHeadings);
+        root.classList.toggle('zur-a11y-big-cursor', state.bigCursor);
+        root.classList.toggle('zur-a11y-reduce-motion', state.reduceMotion);
+        root.classList.toggle('zur-a11y-focus-highlight', state.focusHighlight);
+        root.classList.toggle('zur-a11y-hide-images', state.hideImages);
+        root.classList.toggle('zur-a11y-reading-guide-enabled', state.readingGuide);
+        root.classList.toggle('zur-a11y-text-align', state.textAlign);
+        root.classList.toggle('zur-a11y-dyslexia-font', state.dyslexiaFont);
+        root.classList.toggle('zur-a11y-high-contrast', state.highContrast);
+        root.classList.toggle('zur-a11y-low-saturation', state.lowSaturation);
+        root.classList.toggle('zur-a11y-monochrome', state.monochrome);
 
-        root.style.setProperty('--ksu-a11y-font-scale', String(FONT_SCALES[state.fontSizeStep]));
-        root.style.setProperty('--ksu-a11y-font-weight', String(FONT_WEIGHTS[state.fontWeightStep]));
-        root.style.setProperty('--ksu-a11y-line-height', String(LINE_HEIGHTS[state.lineHeightStep]));
-        root.style.setProperty('--ksu-a11y-letter-spacing', String(LETTER_SPACING[state.letterSpacingStep]));
-        root.style.setProperty('--ksu-a11y-word-spacing', String(WORD_SPACING[state.wordSpacingStep]));
+        root.style.setProperty('--zur-a11y-font-scale', String(FONT_SCALES[state.fontSizeStep]));
+        root.style.setProperty('--zur-a11y-font-weight', String(FONT_WEIGHTS[state.fontWeightStep]));
+        root.style.setProperty('--zur-a11y-line-height', String(LINE_HEIGHTS[state.lineHeightStep]));
+        root.style.setProperty('--zur-a11y-letter-spacing', String(LETTER_SPACING[state.letterSpacingStep]));
+        root.style.setProperty('--zur-a11y-word-spacing', String(WORD_SPACING[state.wordSpacingStep]));
 
-        root.classList.toggle('ksu-a11y-zoom-enabled', state.zoomStep > 0);
+        root.classList.toggle('zur-a11y-zoom-enabled', state.zoomStep > 0);
         try {
             root.style.zoom = String(ZOOM_VALUES[state.zoomStep]);
         } catch (error) {
@@ -2249,7 +2249,7 @@
         }
 
         if (dom.host) {
-            dom.host.classList.toggle('ksu-a11y-theme-dark', state.darkMode);
+            dom.host.classList.toggle('zur-a11y-theme-dark', state.darkMode);
             dom.host.dataset.dir = effectiveDir;
             dom.host.setAttribute('dir', effectiveDir);
             dom.host.dataset.position = resolvePosition(options.position);
@@ -2323,17 +2323,17 @@
     function createFeatureButton(config) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-btn';
+        button.className = 'zur-a11y-btn';
         button.dataset.key = config.key;
         button.setAttribute('title', t(config.key));
 
         var icon = document.createElement('span');
-        icon.className = 'ksu-a11y-btn-icon';
+        icon.className = 'zur-a11y-btn-icon';
         icon.setAttribute('aria-hidden', 'true');
         setIcon(icon, config.key);
 
         var label = document.createElement('span');
-        label.className = 'ksu-a11y-btn-label';
+        label.className = 'zur-a11y-btn-label';
         label.textContent = t(config.key);
 
         button.appendChild(icon);
@@ -2341,10 +2341,10 @@
 
         if (config.kind === 'step') {
             var dots = document.createElement('span');
-            dots.className = 'ksu-a11y-dots';
+            dots.className = 'zur-a11y-dots';
             for (var i = 0; i < config.max; i += 1) {
                 var dot = document.createElement('span');
-                dot.className = 'ksu-a11y-dot';
+                dot.className = 'zur-a11y-dot';
                 dots.appendChild(dot);
             }
             button.appendChild(dots);
@@ -2367,17 +2367,17 @@
     function createProfileButton(modeKey) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-profile-btn';
+        button.className = 'zur-a11y-profile-btn';
         button.dataset.mode = modeKey;
         button.setAttribute('title', t(modeKey));
 
         var icon = document.createElement('span');
-        icon.className = 'ksu-a11y-profile-icon';
+        icon.className = 'zur-a11y-profile-icon';
         icon.setAttribute('aria-hidden', 'true');
         setIcon(icon, modeKey);
 
         var label = document.createElement('span');
-        label.className = 'ksu-a11y-profile-label';
+        label.className = 'zur-a11y-profile-label';
         label.textContent = t(modeKey);
 
         button.appendChild(icon);
@@ -2393,16 +2393,16 @@
     function createLanguageButton(langKey) {
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ksu-a11y-profile-btn ksu-a11y-language-option';
+        button.className = 'zur-a11y-profile-btn zur-a11y-language-option';
         button.dataset.lang = langKey;
         button.setAttribute('title', getLanguageLabel(langKey));
 
         var icon = document.createElement('span');
-        icon.className = 'ksu-a11y-language-icon';
+        icon.className = 'zur-a11y-language-icon';
         icon.innerHTML = getLanguageIcon(langKey);
 
         var label = document.createElement('span');
-        label.className = 'ksu-a11y-profile-label';
+        label.className = 'zur-a11y-profile-label';
         label.textContent = getLanguageLabel(langKey);
 
         button.appendChild(icon);
@@ -2439,7 +2439,7 @@
 
     function addSectionTitle(parent, key) {
         var title = document.createElement('p');
-        title.className = 'ksu-a11y-section-title';
+        title.className = 'zur-a11y-section-title';
         title.dataset.i18n = key;
         title.textContent = t(key);
         parent.appendChild(title);
@@ -2470,39 +2470,39 @@
 
     function buildPanel() {
         var panel = document.createElement('section');
-        panel.className = 'ksu-a11y-panel';
+        panel.className = 'zur-a11y-panel';
         panel.hidden = true;
         panel.tabIndex = -1;
-        panel.id = 'ksu-a11y-panel';
+        panel.id = 'zur-a11y-panel';
         panel.setAttribute('role', 'dialog');
         panel.setAttribute('aria-label', t('title'));
 
         var header = document.createElement('div');
-        header.className = 'ksu-a11y-panel-header';
+        header.className = 'zur-a11y-panel-header';
 
         var title = document.createElement('span');
-        title.className = 'ksu-a11y-panel-title';
+        title.className = 'zur-a11y-panel-title';
         title.textContent = t('title');
 
         var headerActions = document.createElement('div');
-        headerActions.className = 'ksu-a11y-header-actions';
+        headerActions.className = 'zur-a11y-header-actions';
 
         var headerReset = document.createElement('button');
         headerReset.type = 'button';
-        headerReset.className = 'ksu-a11y-header-icon-btn';
+        headerReset.className = 'zur-a11y-header-icon-btn';
         headerReset.setAttribute('title', t('resetAll'));
         var headerResetIcon = document.createElement('span');
-        headerResetIcon.className = 'ksu-a11y-icon';
+        headerResetIcon.className = 'zur-a11y-icon';
         setIcon(headerResetIcon, 'reset');
         headerReset.appendChild(headerResetIcon);
         headerReset.addEventListener('click', function () { resetState(true); });
 
         var closeBtn = document.createElement('button');
         closeBtn.type = 'button';
-        closeBtn.className = 'ksu-a11y-header-icon-btn';
+        closeBtn.className = 'zur-a11y-header-icon-btn';
         closeBtn.setAttribute('title', t('close'));
         var closeIcon = document.createElement('span');
-        closeIcon.className = 'ksu-a11y-icon';
+        closeIcon.className = 'zur-a11y-icon';
         setIcon(closeIcon, 'close');
         closeBtn.appendChild(closeIcon);
         closeBtn.addEventListener('click', closePanel);
@@ -2512,20 +2512,20 @@
 
         var languageBtn = document.createElement('button');
         languageBtn.type = 'button';
-        languageBtn.className = 'ksu-a11y-header-language-btn';
+        languageBtn.className = 'zur-a11y-header-language-btn';
         languageBtn.setAttribute('title', t('language'));
         languageBtn.setAttribute('aria-expanded', 'false');
 
         var languageBtnIcon = document.createElement('span');
-        languageBtnIcon.className = 'ksu-a11y-language-icon';
+        languageBtnIcon.className = 'zur-a11y-language-icon';
         languageBtnIcon.innerHTML = getLanguageIcon(state.lang);
 
         var languageBtnLabel = document.createElement('span');
-        languageBtnLabel.className = 'ksu-a11y-header-language-label';
+        languageBtnLabel.className = 'zur-a11y-header-language-label';
         languageBtnLabel.textContent = getLanguageLabel(state.lang);
 
         var languageBtnArrow = document.createElement('span');
-        languageBtnArrow.className = 'ksu-a11y-header-language-chevron';
+        languageBtnArrow.className = 'zur-a11y-header-language-chevron';
         languageBtnArrow.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
         languageBtn.appendChild(languageBtnIcon);
@@ -2541,11 +2541,11 @@
         header.appendChild(title);
 
         var languageMenu = document.createElement('div');
-        languageMenu.className = 'ksu-a11y-language-dropdown';
+        languageMenu.className = 'zur-a11y-language-dropdown';
         languageMenu.hidden = true;
 
         var languageMenuGrid = document.createElement('div');
-        languageMenuGrid.className = 'ksu-a11y-profile-grid ksu-a11y-language-menu-grid';
+        languageMenuGrid.className = 'zur-a11y-profile-grid zur-a11y-language-menu-grid';
         var languageKeys = ['auto'].concat(getAvailableLanguages());
         for (var l = 0; l < languageKeys.length; l += 1) {
             languageMenuGrid.appendChild(createLanguageButton(languageKeys[l]));
@@ -2560,12 +2560,12 @@
         dom.headerLanguageIcon = languageBtnIcon;
 
         var body = document.createElement('div');
-        body.className = 'ksu-a11y-body';
+        body.className = 'zur-a11y-body';
 
         var profilesWrap = document.createElement('div');
         addSectionTitle(profilesWrap, 'profiles');
         var profilesGrid = document.createElement('div');
-        profilesGrid.className = 'ksu-a11y-profile-grid';
+        profilesGrid.className = 'zur-a11y-profile-grid';
         for (var m = 0; m < MODE_KEYS.length; m += 1) {
             profilesGrid.appendChild(createProfileButton(MODE_KEYS[m]));
         }
@@ -2577,7 +2577,7 @@
             var groupWrap = document.createElement('div');
             addSectionTitle(groupWrap, groups[g]);
             var grid = document.createElement('div');
-            grid.className = 'ksu-a11y-grid';
+            grid.className = 'zur-a11y-grid';
             var items = uiDefinition[groups[g]];
             for (var p = 0; p < items.length; p += 1) {
                 grid.appendChild(createFeatureButton(items[p]));
@@ -2588,12 +2588,12 @@
 
         var resetBtn = document.createElement('button');
         resetBtn.type = 'button';
-        resetBtn.className = 'ksu-a11y-reset-btn';
+        resetBtn.className = 'zur-a11y-reset-btn';
         var resetIcon = document.createElement('span');
-        resetIcon.className = 'ksu-a11y-icon';
+        resetIcon.className = 'zur-a11y-icon';
         setIcon(resetIcon, 'reset');
         var resetLabel = document.createElement('span');
-        resetLabel.className = 'ksu-a11y-reset-label';
+        resetLabel.className = 'zur-a11y-reset-label';
         resetLabel.textContent = t('resetAll');
         resetBtn.appendChild(resetIcon);
         resetBtn.appendChild(resetLabel);
@@ -2602,7 +2602,7 @@
         panel.appendChild(body);
 
         var footer = document.createElement('div');
-        footer.className = 'ksu-a11y-panel-footer';
+        footer.className = 'zur-a11y-panel-footer';
         footer.appendChild(resetBtn);
         panel.appendChild(footer);
 
@@ -2625,28 +2625,28 @@
 
         var host = document.createElement('section');
         host.id = ROOT_ID;
-        host.className = 'ksu-a11y-widget';
+        host.className = 'zur-a11y-widget';
         host.dataset.position = resolvePosition(options.position);
         host.style.zIndex = String(options.zIndex);
 
         var liveRegion = document.createElement('div');
-        liveRegion.className = 'ksu-a11y-live';
+        liveRegion.className = 'zur-a11y-live';
         liveRegion.setAttribute('aria-live', 'polite');
         liveRegion.setAttribute('aria-atomic', 'true');
 
         var toggleButton = document.createElement('button');
         toggleButton.type = 'button';
-        toggleButton.className = 'ksu-a11y-launcher';
+        toggleButton.className = 'zur-a11y-launcher';
         toggleButton.setAttribute('aria-expanded', 'false');
-        toggleButton.setAttribute('aria-controls', 'ksu-a11y-panel');
+        toggleButton.setAttribute('aria-controls', 'zur-a11y-panel');
         toggleButton.setAttribute('aria-label', t('open'));
 
         var launcherIcon = document.createElement('span');
-        launcherIcon.className = 'ksu-a11y-launcher-icon';
+        launcherIcon.className = 'zur-a11y-launcher-icon';
         setIcon(launcherIcon, 'launcher');
 
         var launcherLabel = document.createElement('span');
-        launcherLabel.className = 'ksu-a11y-launcher-label';
+        launcherLabel.className = 'zur-a11y-launcher-label';
         launcherLabel.textContent = t('title');
 
         toggleButton.appendChild(launcherIcon);
@@ -2696,7 +2696,7 @@
         dom.controls.bottomReset.setAttribute('title', t('resetAll'));
         dom.controls.bottomResetLabel.textContent = t('resetAll');
 
-        var sectionTitles = dom.panel.querySelectorAll('.ksu-a11y-section-title');
+        var sectionTitles = dom.panel.querySelectorAll('.zur-a11y-section-title');
         for (var i = 0; i < sectionTitles.length; i += 1) {
             var sectionKey = sectionTitles[i].getAttribute('data-i18n');
             sectionTitles[i].textContent = t(sectionKey);
@@ -2795,7 +2795,7 @@
             if (control.config.kind === 'step') {
                 control.button.setAttribute('aria-pressed', 'true');
                 control.button.dataset.step = String(state[key]);
-                var dots = control.button.querySelectorAll('.ksu-a11y-dot');
+                var dots = control.button.querySelectorAll('.zur-a11y-dot');
                 for (var d = 0; d < dots.length; d += 1) {
                     dots[d].classList.toggle('is-active', d < state[key]);
                 }
@@ -2900,7 +2900,7 @@
         root.style.zoom = '';
         root.style.transform = '';
         root.style.transformOrigin = '';
-        root.className = root.className.replace(/\bksu-a11y-[\w-]+\b/g, '').replace(/\s{2,}/g, ' ').trim();
+        root.className = root.className.replace(/\bzur-a11y-[\w-]+\b/g, '').replace(/\s{2,}/g, ' ').trim();
 
         if (window.speechSynthesis) {
             window.speechSynthesis.cancel();

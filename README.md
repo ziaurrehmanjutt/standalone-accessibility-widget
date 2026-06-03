@@ -166,7 +166,7 @@ For SPA route changes, the widget remains mounted globally and keeps localStorag
 
 - Widget styles are fully self-contained in `accessibility-widget.css`.
 - It does not require Tailwind CSS.
-- All classes are namespaced with `ksu-a11y-` to prevent style conflicts.
+- All classes are namespaced with `zur-a11y-` to prevent style conflicts.
 - No dependency on host framework CSS variables or utility classes.
 
 ## Accessibility Features Included
@@ -187,7 +187,7 @@ For SPA route changes, the widget remains mounted globally and keeps localStorag
 ## Notes
 
 - Settings are saved to localStorage by default.
-- Widget class names are namespaced with `ksu-a11y-` to avoid CSS collisions.
+- Widget class names are namespaced with `zur-a11y-` to avoid CSS collisions.
 - If your site uses strict CSP, host files locally and allow your own origin.
 
 ## Build Minified Files
